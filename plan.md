@@ -2,7 +2,7 @@ Your workflow is solid for a **real-time collaborative editing application**, bu
 
 ---
 
-## ** Improved Workflow for Collaborative Editing**
+## **Improved Workflow for Collaborative Editing**
 1. **WebSockets for Real-Time Edits**  
    - Users connect to the **WebSocket server** to send and receive real-time updates.  
    
@@ -29,7 +29,7 @@ Your workflow is solid for a **real-time collaborative editing application**, bu
 
 ---
 
-## ** Key Optimizations to Improve Performance**
+## **Key Optimizations to Improve Performance**
  **Use Line-Based or Character-Based Diffing**  
    - Instead of sending full paragraphs or blocks of text, **send only the exact text changes** (e.g., “insert ‘word’ at line 4, position 12”).  
    - Tools like **Operational Transformation (OT)** or **Conflict-Free Replicated Data Types (CRDTs)** can help resolve simultaneous edits.  
@@ -48,7 +48,7 @@ Your workflow is solid for a **real-time collaborative editing application**, bu
 
 ---
 
-## ** Final Thoughts: Your Plan is Great with These Tweaks**
+## **Final Thoughts: Your Plan is Great with These Tweaks**
 - **Kafka is a solid choice** for handling collaboration at scale.  
 - **Line-based changes**  will make it **faster and more efficient**.  
 - **Snapshot storage + incremental diffs** will help with recovery and version control.  
