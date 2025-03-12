@@ -1,24 +1,28 @@
-version: '3.8'
+version: "3.8"
 
 networks:
-  collab:
+    collab:
 
 services:
-  server:
-    image: server  
-    container_name: server
-    networks:
-      - collab
-    volumes:
-      - ./src:/home/CollabEdit/src
-    ports:
-      - "8080:8080"  
-    command: ["node", "src/server.js"]
-  client:
-    image: server  
-    container_name: client
-    networks:
-      - collab
-    volumes:
-      - ./src:/home/CollabEdit/src
-    command: ["node", "src/client.js"]
+    server:
+        image: server
+        container_name: server
+        networks:
+            - collab
+        volumes:
+            - ./src:/home/CollabEdit/src
+        ports:
+            - "8080:8080"
+        command: ["node", "src/server.js"]
+
+    web:
+        image: node:18-alpine
+        container_name: web
+        networks:
+            - collab
+        volumes:
+            - ./src:/usr/src/
+        working_dir: /usr/src
+        command: ["npx", "http-server", ".", "-p", "8000"]
+        ports:
+            - "8000:8000"

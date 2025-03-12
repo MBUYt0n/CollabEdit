@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #messages { border: 1px solid #ddd; padding: 10px; height: 300px; overflow-y: auto; margin-bottom: 10px; }
+        input { width: 80%; padding: 10px; }
+        button { padding: 10px; }
+    </style>
+</head>
+<body>
+    <h2>WebSocket Chat</h2>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8080");
+
+        socket.onopen = () => {
+            console.log("Connected to WebSocket server");
+            addMessage("Connected to server");
+        };
+
+        socket.onmessage = (event) => {
+            addMessage(`${event.data}`);
+        };
+
+        socket.onclose = () => {
+            addMessage("Connection closed");
+            console.log("Connection closed");
+        };
+
+        function sendMessage() {
+            const input = document.getElementById("messageInput");
+            if (input.value.trim() !== "") {
+                socket.send(input.value);
+                addMessage(`You: ${input.value}`);
+                input.value = "";
+            }
+        }
+
+        function addMessage(message) {
+            const messageDiv = document.getElementById("messages");
+            const p = document.createElement("p");
+            p.innerText = message;
+            messageDiv.appendChild(p);
+            messageDiv.scrollTop = messageDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>
