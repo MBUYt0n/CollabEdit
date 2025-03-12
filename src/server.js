@@ -19,9 +19,9 @@ wss.on("connection", (socket) => {
 	socket.on("message", (message) => {
 		console.log("Received:", message);
 
-		server.clients.forEach((client) => {
+		wss.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) {
-				client.send(`🔄 ${message}`);
+				client.send(`${message}`);
 			}
 		});
 	});
