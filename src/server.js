@@ -11,20 +11,22 @@ const server = app.listen(PORT, () => {
 	console.log(`HTTP server running on http://localhost:${PORT}`);
 });
 
-const wss = new WebSocket.Server({ host : "0.0.0.0", port: 8080 });
+const wss = new WebSocket.Server({ host: "0.0.0.0", port: 8080 });
 
 wss.on("connection", (socket) => {
 	console.log("Client connected");
 
 	socket.on("message", (message) => {
-		console.log("Received:", message);
+		const changes = JSON.parse(message);
+		console.log("Received changes:", changes);
 
 		wss.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) {
-				client.send(`${message}`);
+				client.send(JSON.stringify(changes));
 			}
 		});
 	});
+
 	socket.on("close", () => console.log("Client disconnected"));
 });
 

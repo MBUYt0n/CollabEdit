@@ -5,5 +5,5 @@ RUN curl -L https://dlcdn.apache.org/kafka/3.9.0/kafka_2.13-3.9.0.tgz -o kafka.t
 ENV PATH="/opt/kafka/bin:${PATH}"
 WORKDIR /home/CollabEdit
 RUN npm init -y
-RUN npm install ws websocket kafkajs express
+RUN npm install ws websocket kafkajs express http-server codemirror
 EXPOSE 9092 3000
