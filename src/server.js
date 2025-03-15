@@ -1,33 +1,48 @@
 const WebSocket = require("ws");
-const express = require("express");
-const path = require("path");
+const { Kafka } = require("kafkajs");
 
-const app = express();
-const PORT = 3000;
 
-app.use(express.static(path.join(__dirname, "public")));
-
-const server = app.listen(PORT, () => {
-	console.log(`HTTP server running on http://localhost:${PORT}`);
+const kafka = new Kafka({
+	clientId: "code-editor",
+	brokers: ["kafka:9092"], 
 });
 
-const wss = new WebSocket.Server({ host: "0.0.0.0", port: 8080 });
+const producer = kafka.producer();
+const consumer = kafka.consumer({ groupId: "editor-group" });
 
-wss.on("connection", (socket) => {
-	console.log("Client connected");
+(async () => {
+	await producer.connect();
+	await consumer.connect();
+	await consumer.subscribe({ topic: "code-updates", fromBeginning: true });
 
-	socket.on("message", (message) => {
-		const changes = JSON.parse(message);
-		console.log("Received changes:", changes);
+	const wss = new WebSocket.Server({ port: 8080 });
 
-		wss.clients.forEach((client) => {
-			if (client.readyState === WebSocket.OPEN) {
-				client.send(JSON.stringify(changes));
-			}
+	wss.on("connection", (socket) => {
+		console.log("Client connected");
+
+		socket.on("message", async (message) => {
+			const changes = JSON.parse(message);
+			console.log("Received changes:", changes);
+
+			await producer.send({
+				topic: "code-updates",
+				messages: [{ value: JSON.stringify(changes) }],
+			});
 		});
+
+		consumer.run({
+			eachMessage: async ({ message }) => {
+				const data = JSON.parse(message.value.toString());
+				wss.clients.forEach((client) => {
+					if (client.readyState === WebSocket.OPEN) {
+						client.send(JSON.stringify(data));
+					}
+				});
+			},
+		});
+
+		socket.on("close", () => console.log("Client disconnected"));
 	});
 
-	socket.on("close", () => console.log("Client disconnected"));
-});
-
-console.log("WebSocket running on ws://localhost:8080");
+	console.log("WebSocket Server running on ws://localhost:8080");
+})();

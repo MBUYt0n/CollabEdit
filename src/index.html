@@ -1,54 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>WebSocket Code Editor</title>
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css"
-        />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchbrackets.min.js"></script>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                padding: 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            #editor-container {
-                width: 80%;
-                max-width: 800px;
-            }
-            #editor {
-                height: 300px;
-                border: 1px solid #ddd;
-            }
-            button,
-            select {
-                margin-top: 10px;
-                padding: 10px;
-            }
-        </style>
-    </head>
-    <body>
-        <h2>WebSocket Code Editor</h2>
-        <div id="editor-container">
-            <select id="language" onchange="changeLanguage()">
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="htmlmixed">HTML</option>
-            </select>
-            <textarea id="editor"></textarea>
-            <button onclick="sendCode()">Send Code</button>
-        </div>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>WebSocket Code Editor</title>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css"
+		/>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchbrackets.min.js"></script>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 20px;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+			#editor-container {
+				width: 80%;
+				max-width: 800px;
+			}
+			#editor {
+				height: 300px;
+				border: 1px solid #ddd;
+			}
+			button,
+			select {
+				margin-top: 10px;
+				padding: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<h2>WebSocket Code Editor</h2>
+		<div id="editor-container">
+			<select id="language" onchange="changeLanguage()">
+				<option value="javascript">JavaScript</option>
+				<option value="python">Python</option>
+				<option value="htmlmixed">HTML</option>
+			</select>
+			<textarea id="editor"></textarea>
+			<button onclick="sendCode()">Send Code</button>
+		</div>
 
-        <script src="client.js"></script>
-    </body>
+		<script src="client.js"></script>
+	</body>
 </html>
