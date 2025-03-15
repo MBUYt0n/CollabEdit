@@ -55,3 +55,11 @@ Your workflow is solid for a **real-time collaborative editing application**, bu
 - **Client-side optimizations (like OT or CRDTs)** will enhance user experience.  
 
 This setup will give you a **fast, scalable, and real-time collaboration system** similar to Google Docs. 
+
+
+
+## Things to do now
+- Real time cursor placement
+- undo changes
+- real time editing with polling mechanism
+- launcher

@@ -13,14 +13,21 @@ function changeLanguage() {
 }
 
 socket.onopen = () => {
-	console.log("Connected to WebSocket server");
+	let id = localStorage.getItem("client_id");
+
+	if (!id) {
+		id = Math.random().toString(36).substr(2, 9);
+		localStorage.setItem("client_id", id);
+	}
+
+	socket.send(JSON.stringify({ type: "register", id }));
+	console.log("Connected to WebSocket server with ID:", id);
 };
 
 socket.onmessage = (event) => {
 	const changes = JSON.parse(event.data);
 	const doc = editor.getDoc();
-
-	changes.forEach((change) => {
+	changes.change.changes.forEach((change) => {
 		let lineCount = doc.lineCount();
 
 		while (lineCount <= change.line) {
@@ -45,7 +52,7 @@ socket.onclose = () => {
 function sendCode() {
 	const currentCode = editor.getValue().split("\n");
 	const changes = [];
-
+	const id = localStorage.getItem("client_id");
 	for (let i = 0; i < currentCode.length; i++) {
 		if (currentCode[i] !== prevCode[i]) {
 			changes.push({ line: i, text: currentCode[i] });
@@ -53,7 +60,7 @@ function sendCode() {
 	}
 
 	if (changes.length > 0) {
-		socket.send(JSON.stringify(changes));
+		socket.send(JSON.stringify({ type: "code-update", id, changes }));
 		prevCode = currentCode;
 	}
 }
