@@ -10,11 +10,6 @@ const cursors = {};
 const colors = {};
 const colorPalette = ["red", "blue", "green", "purple", "orange", "pink"];
 
-function changeLanguage() {
-	const language = document.getElementById("language").value;
-	editor.setOption("mode", language);
-}
-
 socket.onopen = () => {
 	let id = localStorage.getItem("client_id");
 
@@ -33,7 +28,6 @@ socket.onmessage = (event) => {
 	if (message.change) {
 		applyChanges(message.change);
 	} else if (message.cursor) {
-		console.log("Received cursor update:", message.cursor);
 		showCursor(message.cursor);
 	}
 };
@@ -81,6 +75,11 @@ function applyChanges(changes) {
 	prevCode = editor.getValue().split("\n");
 }
 
+function changeLanguage() {
+	const language = document.getElementById("language").value;
+	editor.setOption("mode", language);
+}
+
 function sendCursor() {
 	const cursor = editor.getCursor();
 	const id = localStorage.getItem("client_id");
@@ -90,35 +89,42 @@ function sendCursor() {
 function showCursor(cursorData) {
 	const id = cursorData.id;
 	const cursor = cursorData.cursor;
+	if (id === localStorage.getItem("client_id")) return;
+	console.log("Showing cursor", cursorData);
+
 	if (!cursors[id]) {
 		if (!colors[id]) {
 			colors[id] =
 				colorPalette[Object.keys(colors).length % colorPalette.length];
 		}
 
-		cursors[id] = editor.getDoc().markText(
-			{ line: cursor.line, ch: cursor.ch },
-			{ line: cursor.line, ch: cursor.ch + 1 },
-			{
-				className: `foreign-cursor`,
-				attributes: {
-					style: `border-left: 2px solid ${colors[id]}; margin-left: -2px;`,
-				},
-			}
-		);
-	} else {
-		cursors[id].clear();
-		cursors[id] = editor.getDoc().markText(
-			{ line: cursor.line, ch: cursor.ch },
-			{ line: cursor.line, ch: cursor.ch + 1 },
-			{
-				className: `foreign-cursor`,
-				attributes: {
-					style: `border-left: 2px solid ${colors[id]}; margin-left: -2px;`,
-				},
-			}
-		);
+		const cursorElement = document.createElement("div");
+		cursorElement.classList.add("remote-cursor");
+		cursorElement.style.width = "2px";
+		cursorElement.style.height = "1em";
+		cursorElement.style.backgroundColor = colors[id];
+		cursorElement.style.position = "absolute";
+		cursorElement.style.zIndex = "10";
+		cursorElement.style.pointerEvents = "none";
+
+		cursors[id] = cursorElement;
+		editor.getWrapperElement().appendChild(cursorElement);
+		console.log("Created cursor", cursorElement);
 	}
+
+	const cursorElement = cursors[id];
+
+	const cursorPos = editor.charCoords(
+		{ line: cursor.line, ch: cursor.ch },
+		"local"
+	);
+
+	const gutterWidth = editor.getGutterElement().offsetWidth;
+
+	cursorElement.style.left = `${cursorPos.left + gutterWidth}px`;
+	cursorElement.style.top = `${cursorPos.top}px`;
 }
 
+
+editor.on("change", sendCode);
 setInterval(sendCursor, 1000);

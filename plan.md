@@ -59,7 +59,6 @@ This setup will give you a **fast, scalable, and real-time collaboration system*
 
 
 ## Things to do now
-- Real time cursor placement
+- Merge 
 - undo changes
-- real time editing with polling mechanism
 - launcher
