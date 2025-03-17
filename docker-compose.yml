@@ -47,7 +47,7 @@ services:
         networks:
             - collab
         volumes:
-            - ./src:/home/CollabEdit/src
+            - ./src/server:/home/CollabEdit/src
         ports:
             - "8080:8080"
         command: ["node", "src/server.js"]
@@ -58,8 +58,8 @@ services:
         networks:
             - collab
         volumes:
-            - ./src:/usr/src/
-        working_dir: /usr/src
+            - ./src/client:/usr/src/
+        working_dir: /usr/src/
         command: ["npx", "http-server", ".", "-p", "8000", "-c-1", "--cors"]
         ports:
             - "8000:8000"
@@ -70,7 +70,7 @@ services:
         networks:
             - collab
         volumes:
-            - ./src:/usr/src/
+            - ./src/client:/usr/src/
         working_dir: /usr/src
         command: ["npx", "http-server", ".", "-p", "8001", "-c-1", "--cors"]
         ports:
