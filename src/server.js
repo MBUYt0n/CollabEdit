@@ -45,7 +45,7 @@ redisClient.on("error", (err) => console.error("Redis Client Error", err));
 			if (parsedMessage.type === "register") {
 				socket.clientId = parsedMessage.id;
 				console.log(`Client registered with ID: ${socket.clientId}`);
-			} else {
+			} else if (parsedMessage.type === "code-update") {
 				console.log(
 					"Received changes from",
 					socket.clientId,
@@ -67,6 +67,25 @@ redisClient.on("error", (err) => console.error("Redis Client Error", err));
 							value: JSON.stringify({
 								id: socket.clientId,
 								change: parsedMessage,
+							}),
+						},
+					],
+				});
+			} else if (parsedMessage.type === "cursor-update") {
+				console.log(
+					"Received cursor update from",
+					socket.clientId,
+					":",
+					parsedMessage
+				);
+
+				await producer.send({
+					topic: "code-updates",
+					messages: [
+						{
+							value: JSON.stringify({
+								id: socket.clientId,
+								cursor: parsedMessage,
 							}),
 						},
 					],

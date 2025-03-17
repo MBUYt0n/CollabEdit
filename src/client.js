@@ -6,6 +6,9 @@ const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
 	autoCloseBrackets: true,
 });
 var prevCode = editor.getValue().split("\n");
+const cursors = {}; 
+const colors = {}; 
+const colorPalette = ["red", "blue", "green", "purple", "orange", "pink"];
 
 function changeLanguage() {
 	const language = document.getElementById("language").value;
@@ -25,24 +28,13 @@ socket.onopen = () => {
 };
 
 socket.onmessage = (event) => {
-	const changes = JSON.parse(event.data);
-	const doc = editor.getDoc();
-	changes.change.changes.forEach((change) => {
-		let lineCount = doc.lineCount();
+	const message = JSON.parse(event.data);
 
-		while (lineCount <= change.line) {
-			doc.replaceRange("\n", { line: lineCount, ch: 0 });
-			lineCount++;
-		}
-
-		doc.replaceRange(
-			change.text,
-			{ line: change.line, ch: 0 },
-			{ line: change.line, ch: doc.getLine(change.line).length }
-		);
-	});
-
-	prevCode = editor.getValue().split("\n");
+	if (message.change) {
+		applyChanges(message.change);
+	} else if (message.cursor) {
+		showCursor(message.cursor);
+	}
 };
 
 socket.onclose = () => {
@@ -64,3 +56,69 @@ function sendCode() {
 		prevCode = currentCode;
 	}
 }
+
+function applyChanges(changes) {
+	const doc = editor.getDoc();
+	const id = localStorage.getItem("client_id");
+	if (changes.id !== id) {
+		changes.changes.forEach((change) => {
+			let lineCount = doc.lineCount();
+
+			while (lineCount <= change.line) {
+				doc.replaceRange("\n", { line: lineCount, ch: 0 });
+				lineCount++;
+			}
+
+			doc.replaceRange(
+				change.text,
+				{ line: change.line, ch: 0 },
+				{ line: change.line, ch: doc.getLine(change.line).length }
+			);
+		});
+	}
+
+	prevCode = editor.getValue().split("\n");
+}
+
+function sendCursor() {
+	const cursor = editor.getCursor();
+	const id = localStorage.getItem("client_id");
+	socket.send(JSON.stringify({ type: "cursor-update", id, cursor }));
+}
+
+function showCursor(cursorData) {
+	const id = cursorData.id;
+	const cursor = cursorData.cursor;
+	console.log(cursors)
+	if (!cursors[id]) {
+		if (!colors[id]) {
+			colors[id] =
+				colorPalette[Object.keys(colors).length % colorPalette.length];
+		}
+
+		cursors[id] = editor.getDoc().markText(
+			{ line: cursor.line, ch: cursor.ch },
+			{ line: cursor.line, ch: cursor.ch + 1 },
+			{
+				className: `foreign-cursor`,
+				attributes: {
+					style: `border-left: 2px solid ${colors[id]}; margin-left: -2px;`,
+				},
+			}
+		);
+	} else {
+		cursors[id].clear();
+		cursors[id] = editor.getDoc().markText(
+			{ line: cursor.line, ch: cursor.ch },
+			{ line: cursor.line, ch: cursor.ch + 1 },
+			{
+				className: `foreign-cursor`,
+				attributes: {
+					style: `border-left: 2px solid ${colors[id]}; margin-left: -2px;`,
+				},
+			}
+		);
+	}
+}
+
+setInterval(sendCursor, 1000);
