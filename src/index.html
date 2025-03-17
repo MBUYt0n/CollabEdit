@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>CollabEdit - Homepage</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 20px;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+			.container {
+				width: 80%;
+				max-width: 600px;
+				text-align: center;
+			}
+			button {
+				margin: 10px;
+				padding: 10px 20px;
+				font-size: 16px;
+			}
+			.file-list {
+				margin-top: 20px;
+				text-align: left;
+			}
+			.file-list button {
+				display: block;
+				width: 100%;
+				margin: 5px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Welcome to CollabEdit</h1>
+			<button onclick="createNewFile()">Create New File</button>
+			<div class="file-list">
+				<h3>Existing Files</h3>
+				<div id="file-list-container"></div>
+			</div>
+		</div>
+		<script src="index.js"></script>
+	</body>
+</html>
