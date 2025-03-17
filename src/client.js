@@ -6,8 +6,8 @@ const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
 	autoCloseBrackets: true,
 });
 var prevCode = editor.getValue().split("\n");
-const cursors = {}; 
-const colors = {}; 
+const cursors = {};
+const colors = {};
 const colorPalette = ["red", "blue", "green", "purple", "orange", "pink"];
 
 function changeLanguage() {
@@ -29,10 +29,11 @@ socket.onopen = () => {
 
 socket.onmessage = (event) => {
 	const message = JSON.parse(event.data);
-
+	const id = localStorage.getItem("client_id");
 	if (message.change) {
 		applyChanges(message.change);
 	} else if (message.cursor) {
+		console.log("Received cursor update:", message.cursor);
 		showCursor(message.cursor);
 	}
 };
@@ -89,7 +90,6 @@ function sendCursor() {
 function showCursor(cursorData) {
 	const id = cursorData.id;
 	const cursor = cursorData.cursor;
-	console.log(cursors)
 	if (!cursors[id]) {
 		if (!colors[id]) {
 			colors[id] =

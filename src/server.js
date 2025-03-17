@@ -72,13 +72,6 @@ redisClient.on("error", (err) => console.error("Redis Client Error", err));
 					],
 				});
 			} else if (parsedMessage.type === "cursor-update") {
-				console.log(
-					"Received cursor update from",
-					socket.clientId,
-					":",
-					parsedMessage
-				);
-
 				await producer.send({
 					topic: "code-updates",
 					messages: [
