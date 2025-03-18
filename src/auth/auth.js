@@ -19,7 +19,6 @@ async function registerUser(username, password) {
 		"INSERT INTO users (username, password) VALUES (?, ?)",
 		[username, hashedPassword]
 	);
-	console.log(result);
 	return result.insertId;
 }
 

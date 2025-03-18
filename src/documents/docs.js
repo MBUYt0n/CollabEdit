@@ -24,7 +24,7 @@ async function showDocuments(userId) {
 		"SELECT * FROM documents where user_id = ?",
 		[userId]
 	);
-
+	
 	return result;
 }
 

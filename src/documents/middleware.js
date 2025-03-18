@@ -3,7 +3,7 @@ require("dotenv").config();
 const { JWT_SECRET } = process.env;
 
 function authenticateToken(req, res, next) {
-	const token = req.headers.authorization?.split(" ")[1]; 
+	const token = req.headers.authorization?.split(" ")[1];
 	if (!token) {
 		return res
 			.status(401)
@@ -12,12 +12,13 @@ function authenticateToken(req, res, next) {
 
 	jwt.verify(token, JWT_SECRET, (err, decoded) => {
 		if (err) {
+			console.error("JWT Verification Error:", err);
 			return res.status(403).json({ error: "Invalid or expired token." });
 		}
 
-		req.user = decoded; 
+		req.userId = decoded.userId;
 		next();
 	});
 }
 
-module.exports = authenticateToken;
+module.exports = { authenticateToken };

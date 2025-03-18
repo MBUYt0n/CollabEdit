@@ -65,10 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
 					body: JSON.stringify({ username, password }),
 				}
 			);
-			console.log(response);
 			if (response.ok) {
-				registerContainer.style.display = "none";
-				authContainer.style.display = "block";
+				const data = await response.json();
+				sessionStorage.setItem("token", data.token);
+				window.location.href = "/documents.html";
 			} else {
 				registerError.style.display = "block";
 			}

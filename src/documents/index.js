@@ -7,6 +7,7 @@ const {
 	updateDocument,
 	deleteDocument,
 } = require("./docs");
+const { authenticateToken } = require("./middleware");
 
 const app = express();
 const PORT = 3002;
@@ -14,10 +15,13 @@ const PORT = 3002;
 app.use(express.json());
 app.use(cors());
 
-app.get("/documents", async (req, res) => {
-	const userId = req.user.id; 
+app.get("/fetch", authenticateToken, async (req, res) => {
+	const userId = req.userId;
 	try {
 		const documents = await showDocuments(userId);
+		if (!documents) {
+			return res.status(404).send({ error: "No documents found" });
+		}
 		res.status(200).json(documents);
 	} catch (error) {
 		console.error("Error fetching documents:", error);
@@ -25,7 +29,7 @@ app.get("/documents", async (req, res) => {
 	}
 });
 
-app.post("/documents", async (req, res) => {
+app.post("/new", authenticateToken, async (req, res) => {
 	const userId = req.user.id;
 	const { title, content } = req.body;
 	try {
@@ -37,7 +41,7 @@ app.post("/documents", async (req, res) => {
 	}
 });
 
-app.get("/documents/:id", async (req, res) => {
+app.get("/documents/:id", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	try {
 		const document = await fetchDocument(documentId);
@@ -52,7 +56,7 @@ app.get("/documents/:id", async (req, res) => {
 	}
 });
 
-app.put("/documents/:id", async (req, res) => {
+app.put("/documents/:id", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	const { content } = req.body;
 	try {
@@ -68,7 +72,7 @@ app.put("/documents/:id", async (req, res) => {
 	}
 });
 
-app.delete("/documents/:id", async (req, res) => {
+app.delete("/documents/:id", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	try {
 		const affectedRows = await deleteDocument(documentId);

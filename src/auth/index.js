@@ -18,8 +18,8 @@ app.post("/register", async (req, res) => {
 	const { username, password } = req.body;
 	try {
 		await registerUser(username, password);
-		console.log(`User ${username} registered successfully`);
-		res.status(201).send({ message: "User registered successfully" });
+		const token = createToken(username);
+		res.status(201).send({ token });
 	} catch (error) {
 		console.error("Error registering user:", error);
 		res.status(500).send({ error: "Internal Server Error" });
@@ -30,6 +30,9 @@ app.post("/login", async (req, res) => {
 	const { username, password } = req.body;
 	try {
 		const user = await authenticateUser(username, password);
+		if (!user) {
+			throw new Error("Invalid username or password");
+		}
 		const token = createToken(user);
 		res.status(200).send({ token });
 	} catch (error) {

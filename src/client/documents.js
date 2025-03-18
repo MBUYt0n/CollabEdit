@@ -12,12 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (title && content) {
 			try {
 				const response = await fetch(
-					"http://localhost:3000/documents",
+					"http://localhost:3000/documents/new",
 					{
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
-							Authorization: `Bearer ${localStorage.getItem(
+							Authorization: `Bearer ${sessionStorage.getItem(
 								"token"
 							)}`,
 						},
@@ -39,12 +39,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const fetchDocuments = async () => {
 		try {
-			const response = await fetch("http://localhost:3000/documents", {
-				headers: {
-					Authorization: `Bearer ${localStorage.getItem("token")}`,
-				},
-			});
-			if (response.ok) {
+			const response = await fetch(
+				"http://localhost:3000/documents/fetch",
+				{
+					headers: {
+						Authorization: `Bearer ${sessionStorage.getItem(
+							"token"
+						)}`,
+					},
+				}
+			);
+			if (response.status === 200) {
 				const documents = await response.json();
 				fileListContainer.innerHTML = "";
 				documents.forEach((doc) => {
@@ -55,6 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					});
 					fileListContainer.appendChild(docButton);
 				});
+			} else if (response.status === 404) {
+				fileListContainer.innerHTML = "<p>No documents found</p>";
 			} else {
 				alert("Failed to fetch documents");
 			}

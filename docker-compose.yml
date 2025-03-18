@@ -118,6 +118,7 @@ services:
             - DB_USER=${MARIADB_USER}
             - DB_PASSWORD=${MARIADB_PASSWORD}
             - DB_NAME=${MARIADB_DATABASE}
+            - JWT_SECRET=${JWT_SECRET}
         ports:
             - "3002:3002"
         volumes:
