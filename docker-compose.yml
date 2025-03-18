@@ -1,7 +1,8 @@
+version: "3.8"
+
 networks:
     collab:
-
-version: "3.8"
+        driver: bridge
 
 services:
     redis:
@@ -48,32 +49,75 @@ services:
         networks:
             - collab
         environment:
-            - MARIADB_ROOT_PASSWORD=rootpassword
-            - MARIADB_DATABASE=collabedit
-            - MARIADB_USER=collabuser
-            - MARIADB_PASSWORD=collabpassword
+            - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+            - MARIADB_DATABASE=${MARIADB_DATABASE}
+            - MARIADB_USER=${MARIADB_USER}
+            - MARIADB_PASSWORD=${MARIADB_PASSWORD}
         ports:
             - "3306:3306"
         volumes:
             - mariadb_data:/var/lib/mysql
+            - ./db-init:/docker-entrypoint-initdb.d
 
-    server:
-        image: server
-        container_name: server
-        depends_on:
-            - mariadb
+    auth:
+        image: auth
+        container_name: auth
         networks:
             - collab
-        volumes:
-            - ./src/server:/home/CollabEdit/src
-        ports:
-            - "8080:8080"
         environment:
             - DB_HOST=mariadb
-            - DB_USER=collabuser
-            - DB_PASSWORD=collabpassword
-            - DB_NAME=collabedit
-        command: ["node", "src/server.js"]
+            - DB_USER=${MARIADB_USER}
+            - DB_PASSWORD=${MARIADB_PASSWORD}
+            - DB_NAME=${MARIADB_DATABASE}
+            - JWT_SECRET=${JWT_SECRET}
+        ports:
+            - "3001:3001"
+        volumes:
+            - ./src/auth:/home/CollabEdit
+
+    collab:
+        image: collab
+        container_name: collab
+        depends_on:
+            - mariadb
+            - kafka
+            - redis
+        networks:
+            - collab
+        environment:
+            - DB_HOST=mariadb
+            - DB_USER=${MARIADB_USER}
+            - DB_PASSWORD=${MARIADB_PASSWORD}
+            - DB_NAME=${MARIADB_DATABASE}
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./src/collab:/home/CollabEdit
+
+    documents:
+        image: documents
+        container_name: documents
+        networks:
+            - collab
+        environment:
+            - DB_HOST=mariadb
+            - DB_USER=${MARIADB_USER}
+            - DB_PASSWORD=${MARIADB_PASSWORD}
+            - DB_NAME=${MARIADB_DATABASE}
+        ports:
+            - "3002:3002"
+        volumes:
+            - ./src/documents:/home/CollabEdit
+
+    api-gateway:
+        image: api-gateway
+        container_name: api-gateway
+        networks:
+            - collab
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./src/api-gateway:/home/CollabEdit
 
     web:
         image: node:18-alpine
@@ -94,7 +138,7 @@ services:
             - collab
         volumes:
             - ./src/client:/usr/src/
-        working_dir: /usr/src
+        working_dir: /usr/src/
         command: ["npx", "http-server", ".", "-p", "8001", "-c-1", "--cors"]
         ports:
             - "8001:8001"
