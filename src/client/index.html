@@ -57,6 +57,34 @@
 			<p id="login-error" style="color: red; display: none">
 				Invalid credentials, please try again.
 			</p>
+			<p>
+				Don't have an account?
+				<a href="#" id="show-register">Register</a>
+			</p>
+		</div>
+		<div class="container" id="register-container" style="display: none">
+			<h1>Register for CollabEdit</h1>
+			<form id="register-form">
+				<input
+					type="text"
+					id="register-username"
+					placeholder="Username"
+					required
+				/>
+				<input
+					type="password"
+					id="register-password"
+					placeholder="Password"
+					required
+				/>
+				<button type="submit">Register</button>
+			</form>
+			<p id="register-error" style="color: red; display: none">
+				Registration failed, please try again.
+			</p>
+			<p>
+				Already have an account? <a href="#" id="show-login">Login</a>
+			</p>
 		</div>
 		<div class="container" id="main-container">
 			<h1>Welcome to CollabEdit</h1>

@@ -1,16 +1,17 @@
 const WebSocket = require("ws");
 const { Kafka } = require("kafkajs");
 const { createClient } = require("redis");
-const mysql = require("mysql2/promise");
+const mariadb = require("mariadb");
+require("dotenv").config();
 
-const pool = mysql.createPool({
-	host: "mariadb",
-	user: "collabuser",
-	password: "collabpassword",
-	database: "collabedit",
-	waitForConnections: true,
+const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+
+const pool = mariadb.createPool({
+	host: DB_HOST,
+	user: DB_USER,
+	password: DB_PASSWORD,
+	database: DB_NAME,
 	connectionLimit: 10,
-	queueLimit: 0,
 });
 
 const kafka = new Kafka({ clientId: "code-editor", brokers: ["kafka:9092"] });

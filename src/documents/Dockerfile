@@ -1,5 +1,5 @@
 FROM node:18-alpine
 WORKDIR /home/CollabEdit
 RUN npm init -y
-RUN npm install mysql2 jsonwebtoken dotenv
-CMD ["node", "docs.js"]
+RUN npm install mariadb jsonwebtoken dotenv express
+CMD ["node", "src/index.js"]

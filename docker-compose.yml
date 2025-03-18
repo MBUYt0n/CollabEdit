@@ -73,9 +73,31 @@ services:
         ports:
             - "3001:3001"
         volumes:
-            - ./src/auth:/home/CollabEdit
+            - ./src/auth:/home/CollabEdit/src
 
-    # collab:
+    api-gateway:
+        image: api-gateway
+        container_name: api-gateway
+        networks:
+            - collab
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./src/api-gateway:/home/CollabEdit/src
+
+    web:
+        image: node:18-alpine
+        container_name: web
+        networks:
+            - collab
+        volumes:
+            - ./src/client:/usr/src/
+        working_dir: /usr/src/
+        command: ["npx", "http-server", ".", "-p", "8000", "-c-1", "--cors"]
+        ports:
+            - "8000:8000"
+
+        # collab:
     #     image: server
     #     container_name: collab
     #     depends_on:
@@ -108,28 +130,6 @@ services:
     #         - "3002:3002"
     #     volumes:
     #         - ./src/documents:/home/CollabEdit
-
-    api-gateway:
-        image: api-gateway
-        container_name: api-gateway
-        networks:
-            - collab
-        ports:
-            - "3000:3000"
-        volumes:
-            - ./src/api-gateway:/home/CollabEdit
-
-    web:
-        image: node:18-alpine
-        container_name: web
-        networks:
-            - collab
-        volumes:
-            - ./src/client:/usr/src/
-        working_dir: /usr/src/
-        command: ["npx", "http-server", ".", "-p", "8000", "-c-1", "--cors"]
-        ports:
-            - "8000:8000"
 
     # web1:
     #     image: node:18-alpine
