@@ -1,13 +1,14 @@
-const mysql = require("mysql2/promise");
+const mariadb = require("mariadb");
+require("dotenv").config();
 
-const pool = mysql.createPool({
-	host: "mariadb",
-	user: "collabuser",
-	password: "collabpassword",
-	database: "collabedit",
-	waitForConnections: true,
+const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+
+const pool = mariadb.createPool({
+	host: DB_HOST,
+	user: DB_USER,
+	password: DB_PASSWORD,
+	database: DB_NAME,
 	connectionLimit: 10,
-	queueLimit: 0,
 });
 
 async function fetchDocument(documentId) {
@@ -28,36 +29,35 @@ async function showDocuments(userId) {
 }
 
 async function createDocument(userId, title, content) {
-    const [result] = await pool.query(
-        "INSERT INTO documents (user_id, title, content) VALUES (?, ?, ?)",
-        [userId, title, content]
-    );
+	const [result] = await pool.query(
+		"INSERT INTO documents (user_id, title, content) VALUES (?, ?, ?)",
+		[userId, title, content]
+	);
 
-    return result.insertId;
+	return result.insertId;
 }
 
 async function updateDocument(documentId, content) {
-    const [result] = await pool.query(
-        "UPDATE documents SET content = ? WHERE id = ?",
-        [content, documentId]
-    );
+	const [result] = await pool.query(
+		"UPDATE documents SET content = ? WHERE id = ?",
+		[content, documentId]
+	);
 
-    return result.affectedRows;
+	return result.affectedRows;
 }
 
 async function deleteDocument(documentId) {
-    const [result] = await pool.query(
-        "DELETE FROM documents WHERE id = ?",
-        [documentId]
-    );
+	const [result] = await pool.query("DELETE FROM documents WHERE id = ?", [
+		documentId,
+	]);
 
-    return result.affectedRows;
+	return result.affectedRows;
 }
 
 module.exports = {
-    fetchDocument,
-    showDocuments,
-    createDocument,
-    updateDocument,
-    deleteDocument,
+	fetchDocument,
+	showDocuments,
+	createDocument,
+	updateDocument,
+	deleteDocument,
 };

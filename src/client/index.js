@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	const registerError = document.getElementById("register-error");
 	const authContainer = document.getElementById("auth-container");
 	const registerContainer = document.getElementById("register-container");
-	const mainContainer = document.getElementById("main-container");
 	const showRegisterLink = document.getElementById("show-register");
 	const showLoginLink = document.getElementById("show-login");
 
@@ -39,8 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (response.ok) {
 				const data = await response.json();
 				localStorage.setItem("token", data.token);
-				authContainer.style.display = "none";
-				mainContainer.style.display = "block";
+				window.location.href = "/documents.html";
 			} else {
 				loginError.style.display = "block";
 			}
@@ -82,10 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const token = localStorage.getItem("token");
 	if (token) {
-		authContainer.style.display = "none";
-		mainContainer.style.display = "block";
+		window.location.href = "/documents.html";
 	} else {
 		authContainer.style.display = "block";
-		mainContainer.style.display = "none";
 	}
 });

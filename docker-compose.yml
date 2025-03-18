@@ -93,11 +93,37 @@ services:
         volumes:
             - ./src/client:/usr/src/
         working_dir: /usr/src/
-        command: ["npx", "http-server", ".", "-p", "8000", "-c-1", "--cors"]
+        command:
+            [
+                "npx",
+                "http-server",
+                ".",
+                "-p",
+                "8000",
+                "-c-1",
+                "--cors",
+                "-i",
+                "index.html",
+            ]
         ports:
             - "8000:8000"
 
-        # collab:
+    documents:
+        image: documents
+        container_name: documents
+        networks:
+            - collab
+        environment:
+            - DB_HOST=mariadb
+            - DB_USER=${MARIADB_USER}
+            - DB_PASSWORD=${MARIADB_PASSWORD}
+            - DB_NAME=${MARIADB_DATABASE}
+        ports:
+            - "3002:3002"
+        volumes:
+            - ./src/documents:/home/CollabEdit/src
+
+    # collab:
     #     image: server
     #     container_name: collab
     #     depends_on:
@@ -115,21 +141,6 @@ services:
     #         - "8080:8080"
     #     volumes:
     #         - ./src/collab:/home/CollabEdit
-
-    # documents:
-    #     image: documents
-    #     container_name: documents
-    #     networks:
-    #         - collab
-    #     environment:
-    #         - DB_HOST=mariadb
-    #         - DB_USER=${MARIADB_USER}
-    #         - DB_PASSWORD=${MARIADB_PASSWORD}
-    #         - DB_NAME=${MARIADB_DATABASE}
-    #     ports:
-    #         - "3002:3002"
-    #     volumes:
-    #         - ./src/documents:/home/CollabEdit
 
     # web1:
     #     image: node:18-alpine
