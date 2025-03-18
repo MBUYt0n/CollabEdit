@@ -1,27 +1,16 @@
 const express = require("express");
 const axios = require("axios");
+const cors = require("cors");
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
 
-app.use("/auth", (req, res) => {
-	const url = `http://auth:3001${req.url}`;
-	axios({
-		method: req.method,
-		url,
-		data: req.body,
-		headers: req.headers,
-	})
-		.then((response) => res.status(response.status).send(response.data))
-		.catch((error) =>
-			res.status(error.response.status).send(error.response.data)
-		);
-});
+app.use(cors());
 
-app.use("/documents", (req, res) => {
-	const url = `http://documents:3002${req.url}`;
+const proxyRequest = (serviceUrl) => (req, res) => {
+	const url = `${serviceUrl}${req.url}`;
 	axios({
 		method: req.method,
 		url,
@@ -30,23 +19,17 @@ app.use("/documents", (req, res) => {
 	})
 		.then((response) => res.status(response.status).send(response.data))
 		.catch((error) =>
-			res.status(error.response.status).send(error.response.data)
+			res
+				.status(error.response?.status || 500)
+				.send(
+					error.response?.data || { error: "Internal Server Error" }
+				)
 		);
-});
+};
 
-app.use("/collab", (req, res) => {
-	const url = `http://collab:8080${req.url}`;
-	axios({
-		method: req.method,
-		url,
-		data: req.body,
-		headers: req.headers,
-	})
-		.then((response) => res.status(response.status).send(response.data))
-		.catch((error) =>
-			res.status(error.response.status).send(error.response.data)
-		);
-});
+app.use("/auth", proxyRequest("http://auth:3001"));
+app.use("/documents", proxyRequest("http://documents:3002"));
+app.use("/collab", proxyRequest("http://collab:8080"));
 
 app.listen(PORT, () => {
 	console.log(`API Gateway running on http://localhost:${PORT}`);

@@ -5,42 +5,42 @@ networks:
         driver: bridge
 
 services:
-    redis:
-        image: redis:latest
-        container_name: redis
-        networks:
-            - collab
-        ports:
-            - "6379:6379"
+    # redis:
+    #     image: redis:latest
+    #     container_name: redis
+    #     networks:
+    #         - collab
+    #     ports:
+    #         - "6379:6379"
 
-    zookeeper:
-        image: bitnami/zookeeper:latest
-        container_name: zookeeper
-        environment:
-            - ALLOW_ANONYMOUS_LOGIN=yes
-            - BITNAMI_DEBUG=false
-            - ZOO_LOG_LEVEL=ERROR
-        networks:
-            - collab
+    # zookeeper:
+    #     image: bitnami/zookeeper:latest
+    #     container_name: zookeeper
+    #     environment:
+    #         - ALLOW_ANONYMOUS_LOGIN=yes
+    #         - BITNAMI_DEBUG=false
+    #         - ZOO_LOG_LEVEL=ERROR
+    #     networks:
+    #         - collab
 
-    kafka:
-        image: bitnami/kafka:latest
-        container_name: kafka
-        depends_on:
-            - zookeeper
-        environment:
-            - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-            - ALLOW_PLAINTEXT_LISTENER=yes
-            - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-            - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-            - KAFKA_LOG4J_LOGGERS=kafka.controller=ERROR,kafka.log.LogCleaner=ERROR,kafka.server=ERROR,kafka.coordinator=ERROR
-            - KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR
-        volumes:
-            - ./log4j.properties:/opt/bitnami/kafka/config/log4j.properties
-        networks:
-            - collab
-        ports:
-            - "9092:9092"
+    # kafka:
+    #     image: bitnami/kafka:latest
+    #     container_name: kafka
+    #     depends_on:
+    #         - zookeeper
+    #     environment:
+    #         - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    #         - ALLOW_PLAINTEXT_LISTENER=yes
+    #         - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+    #         - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    #         - KAFKA_LOG4J_LOGGERS=kafka.controller=ERROR,kafka.log.LogCleaner=ERROR,kafka.server=ERROR,kafka.coordinator=ERROR
+    #         - KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR
+    #     volumes:
+    #         - ./log4j.properties:/opt/bitnami/kafka/config/log4j.properties
+    #     networks:
+    #         - collab
+    #     ports:
+    #         - "9092:9092"
 
     mariadb:
         image: mariadb:latest
@@ -57,7 +57,7 @@ services:
             - "3306:3306"
         volumes:
             - mariadb_data:/var/lib/mysql
-            - ./db-init:/docker-entrypoint-initdb.d
+            - ./db:/docker-entrypoint-initdb.d
 
     auth:
         image: auth
@@ -75,39 +75,39 @@ services:
         volumes:
             - ./src/auth:/home/CollabEdit
 
-    collab:
-        image: collab
-        container_name: collab
-        depends_on:
-            - mariadb
-            - kafka
-            - redis
-        networks:
-            - collab
-        environment:
-            - DB_HOST=mariadb
-            - DB_USER=${MARIADB_USER}
-            - DB_PASSWORD=${MARIADB_PASSWORD}
-            - DB_NAME=${MARIADB_DATABASE}
-        ports:
-            - "8080:8080"
-        volumes:
-            - ./src/collab:/home/CollabEdit
+    # collab:
+    #     image: server
+    #     container_name: collab
+    #     depends_on:
+    #         - mariadb
+    #         - kafka
+    #         - redis
+    #     networks:
+    #         - collab
+    #     environment:
+    #         - DB_HOST=mariadb
+    #         - DB_USER=${MARIADB_USER}
+    #         - DB_PASSWORD=${MARIADB_PASSWORD}
+    #         - DB_NAME=${MARIADB_DATABASE}
+    #     ports:
+    #         - "8080:8080"
+    #     volumes:
+    #         - ./src/collab:/home/CollabEdit
 
-    documents:
-        image: documents
-        container_name: documents
-        networks:
-            - collab
-        environment:
-            - DB_HOST=mariadb
-            - DB_USER=${MARIADB_USER}
-            - DB_PASSWORD=${MARIADB_PASSWORD}
-            - DB_NAME=${MARIADB_DATABASE}
-        ports:
-            - "3002:3002"
-        volumes:
-            - ./src/documents:/home/CollabEdit
+    # documents:
+    #     image: documents
+    #     container_name: documents
+    #     networks:
+    #         - collab
+    #     environment:
+    #         - DB_HOST=mariadb
+    #         - DB_USER=${MARIADB_USER}
+    #         - DB_PASSWORD=${MARIADB_PASSWORD}
+    #         - DB_NAME=${MARIADB_DATABASE}
+    #     ports:
+    #         - "3002:3002"
+    #     volumes:
+    #         - ./src/documents:/home/CollabEdit
 
     api-gateway:
         image: api-gateway
@@ -131,17 +131,17 @@ services:
         ports:
             - "8000:8000"
 
-    web1:
-        image: node:18-alpine
-        container_name: web1
-        networks:
-            - collab
-        volumes:
-            - ./src/client:/usr/src/
-        working_dir: /usr/src/
-        command: ["npx", "http-server", ".", "-p", "8001", "-c-1", "--cors"]
-        ports:
-            - "8001:8001"
+    # web1:
+    #     image: node:18-alpine
+    #     container_name: web1
+    #     networks:
+    #         - collab
+    #     volumes:
+    #         - ./src/client:/usr/src/
+    #     working_dir: /usr/src/
+    #     command: ["npx", "http-server", ".", "-p", "8001", "-c-1", "--cors"]
+    #     ports:
+    #         - "8001:8001"
 
 volumes:
     mariadb_data:
