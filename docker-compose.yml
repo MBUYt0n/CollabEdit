@@ -41,15 +41,38 @@ services:
         ports:
             - "9092:9092"
 
+    mariadb:
+        image: mariadb:latest
+        container_name: mariadb
+        restart: always
+        networks:
+            - collab
+        environment:
+            - MARIADB_ROOT_PASSWORD=rootpassword
+            - MARIADB_DATABASE=collabedit
+            - MARIADB_USER=collabuser
+            - MARIADB_PASSWORD=collabpassword
+        ports:
+            - "3306:3306"
+        volumes:
+            - mariadb_data:/var/lib/mysql
+
     server:
         image: server
         container_name: server
+        depends_on:
+            - mariadb
         networks:
             - collab
         volumes:
             - ./src/server:/home/CollabEdit/src
         ports:
             - "8080:8080"
+        environment:
+            - DB_HOST=mariadb
+            - DB_USER=collabuser
+            - DB_PASSWORD=collabpassword
+            - DB_NAME=collabedit
         command: ["node", "src/server.js"]
 
     web:
@@ -75,3 +98,6 @@ services:
         command: ["npx", "http-server", ".", "-p", "8001", "-c-1", "--cors"]
         ports:
             - "8001:8001"
+
+volumes:
+    mariadb_data:

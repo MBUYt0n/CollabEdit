@@ -28,7 +28,7 @@ socket.onmessage = (event) => {
 	if (message.change) {
 		applyChanges(message.change);
 	} else if (message.cursor) {
-		showCursor(message.cursor);
+		showCursor(message);
 	}
 };
 
@@ -56,7 +56,7 @@ function applyChanges(changes) {
 	const doc = editor.getDoc();
 	const id = localStorage.getItem("client_id");
 	if (changes.id !== id) {
-		changes.changes.forEach((change) => {
+		changes.forEach((change) => {
 			let lineCount = doc.lineCount();
 
 			while (lineCount <= change.line) {
@@ -109,7 +109,6 @@ function showCursor(cursorData) {
 
 		cursors[id] = cursorElement;
 		editor.getWrapperElement().appendChild(cursorElement);
-		console.log("Created cursor", cursorElement);
 	}
 
 	const cursorElement = cursors[id];
@@ -124,7 +123,6 @@ function showCursor(cursorData) {
 	cursorElement.style.left = `${cursorPos.left + gutterWidth}px`;
 	cursorElement.style.top = `${cursorPos.top}px`;
 }
-
 
 editor.on("change", sendCode);
 setInterval(sendCursor, 1000);
