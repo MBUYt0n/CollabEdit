@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const createDocumentButton = document.getElementById("create-document");
 	const fileListContainer = document.getElementById("file-list-container");
-	const token = localStorage.getItem("token");
+	const token = sessionStorage.getItem("token");
 	if (!token) {
 		console.error("No token found, redirecting to login page");
 		window.location.href = "/";

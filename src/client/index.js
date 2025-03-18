@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			if (response.ok) {
 				const data = await response.json();
-				localStorage.setItem("token", data.token);
+				sessionStorage.setItem("token", data.token);
 				window.location.href = "/documents.html";
 			} else {
 				loginError.style.display = "block";
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-	const token = localStorage.getItem("token");
+	const token = sessionStorage.getItem("token");
 	if (token) {
 		window.location.href = "/documents.html";
 	} else {
