@@ -59,6 +59,9 @@ This setup will give you a **fast, scalable, and real-time collaboration system*
 
 
 ## Things to do now
-- Merge 
+- Merge conflicts
 - undo changes
+- cursor sharing
+- saving document
+- deletion
 - launcher

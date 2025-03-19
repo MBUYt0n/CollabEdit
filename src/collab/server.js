@@ -37,8 +37,12 @@ const connections = new Map();
 	consumer.run({
 		eachMessage: async ({ message }) => {
 			const data = JSON.parse(message.value.toString());
+			const senderId = data.id;
 			wss.clients.forEach((client) => {
-				if (client.readyState === WebSocket.OPEN) {
+				if (
+					client.readyState === WebSocket.OPEN &&
+					client !== connections.get(senderId)
+				) {
 					client.send(JSON.stringify(data));
 				}
 			});
@@ -59,8 +63,7 @@ const connections = new Map();
 					clientId = userId;
 					connections.set(clientId, socket);
 					console.log(`Client registered: ${clientId}`);
-				}
-				catch (error) {
+				} catch (error) {
 					console.error("Error verifying JWT:", error);
 					socket.close();
 				}

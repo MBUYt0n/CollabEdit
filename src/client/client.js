@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		autoCloseBrackets: true,
 	});
 	let prevCode = editor.getValue().split("\n");
+	const token = sessionStorage.getItem("token");
 
 	const cursors = {};
 	const colors = {};
@@ -47,15 +48,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	socket.onopen = () => {
-		
-		const token = sessionStorage.getItem("token");
 		socket.send(JSON.stringify({ type: "register", token }));
 		console.log("Connected to WebSocket server with ID:");
 	};
 
 	socket.onmessage = (event) => {
 		const message = JSON.parse(event.data);
-		const id = localStorage.getItem("client_id");
 		if (message.change) {
 			applyChanges(message.change);
 		} else if (message.cursor) {
@@ -70,8 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	function sendCode() {
 		const currentCode = editor.getValue().split("\n");
 		const changes = [];
-		const id = localStorage.getItem("client_id");
-
 		for (let i = 0; i < currentCode.length; i++) {
 			if (currentCode[i] !== prevCode[i]) {
 				changes.push({ line: i, text: currentCode[i] });
@@ -79,31 +75,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		if (changes.length > 0) {
-			socket.send(JSON.stringify({ type: "code-update", id, changes }));
+			socket.send(JSON.stringify({ type: "code-update", documentId, changes }));
 			prevCode = currentCode;
 		}
 	}
 
 	function applyChanges(changes) {
 		const doc = editor.getDoc();
-		const id = localStorage.getItem("client_id");
 
-		if (changes.id !== id) {
-			changes.forEach((change) => {
-				let lineCount = doc.lineCount();
+		changes.forEach((change) => {
+			let lineCount = doc.lineCount();
 
-				while (lineCount <= change.line) {
-					doc.replaceRange("\n", { line: lineCount, ch: 0 });
-					lineCount++;
-				}
+			while (lineCount <= change.line) {
+				doc.replaceRange("\n", { line: lineCount, ch: 0 });
+				lineCount++;
+			}
 
-				doc.replaceRange(
-					change.text,
-					{ line: change.line, ch: 0 },
-					{ line: change.line, ch: doc.getLine(change.line).length }
-				);
-			});
-		}
+			doc.replaceRange(
+				change.text,
+				{ line: change.line, ch: 0 },
+				{ line: change.line, ch: doc.getLine(change.line).length }
+			);
+		});
 
 		prevCode = editor.getValue().split("\n");
 	}
@@ -113,52 +106,52 @@ document.addEventListener("DOMContentLoaded", () => {
 		editor.setOption("mode", language);
 	}
 
-	function sendCursor() {
-		const cursor = editor.getCursor();
-		const id = localStorage.getItem("client_id");
-		socket.send(JSON.stringify({ type: "cursor-update", id, cursor }));
-	}
+	// function sendCursor() {
+	// 	const cursor = editor.getCursor();
+	// 	const id = localStorage.getItem("client_id");
+	// 	socket.send(JSON.stringify({ type: "cursor-update", id, cursor }));
+	// }
 
-	function showCursor(cursorData) {
-		const id = cursorData.id;
-		const cursor = cursorData.cursor;
+	// function showCursor(cursorData) {
+	// 	const id = cursorData.id;
+	// 	const cursor = cursorData.cursor;
 
-		if (id === localStorage.getItem("client_id")) return;
+	// 	if (id === localStorage.getItem("client_id")) return;
 
-		if (!cursors[id]) {
-			if (!colors[id]) {
-				colors[id] =
-					colorPalette[
-						Object.keys(colors).length % colorPalette.length
-					];
-			}
+	// 	if (!cursors[id]) {
+	// 		if (!colors[id]) {
+	// 			colors[id] =
+	// 				colorPalette[
+	// 					Object.keys(colors).length % colorPalette.length
+	// 				];
+	// 		}
 
-			const cursorElement = document.createElement("div");
-			cursorElement.classList.add("remote-cursor");
-			cursorElement.style.width = "2px";
-			cursorElement.style.height = "1em";
-			cursorElement.style.backgroundColor = colors[id];
-			cursorElement.style.position = "absolute";
-			cursorElement.style.zIndex = "10";
-			cursorElement.style.pointerEvents = "none";
+	// 		const cursorElement = document.createElement("div");
+	// 		cursorElement.classList.add("remote-cursor");
+	// 		cursorElement.style.width = "2px";
+	// 		cursorElement.style.height = "1em";
+	// 		cursorElement.style.backgroundColor = colors[id];
+	// 		cursorElement.style.position = "absolute";
+	// 		cursorElement.style.zIndex = "10";
+	// 		cursorElement.style.pointerEvents = "none";
 
-			cursors[id] = cursorElement;
-			editor.getWrapperElement().appendChild(cursorElement);
-		}
+	// 		cursors[id] = cursorElement;
+	// 		editor.getWrapperElement().appendChild(cursorElement);
+	// 	}
 
-		const cursorElement = cursors[id];
-		const cursorPos = editor.charCoords(
-			{ line: cursor.line, ch: cursor.ch },
-			"local"
-		);
-		const gutterWidth = editor.getGutterElement().offsetWidth;
+	// 	const cursorElement = cursors[id];
+	// 	const cursorPos = editor.charCoords(
+	// 		{ line: cursor.line, ch: cursor.ch },
+	// 		"local"
+	// 	);
+	// 	const gutterWidth = editor.getGutterElement().offsetWidth;
 
-		cursorElement.style.left = `${cursorPos.left + gutterWidth}px`;
-		cursorElement.style.top = `${cursorPos.top}px`;
-	}
+	// 	cursorElement.style.left = `${cursorPos.left + gutterWidth}px`;
+	// 	cursorElement.style.top = `${cursorPos.top}px`;
+	// }
 
 	editor.on("change", sendCode);
-	setInterval(sendCursor, 1000);
+	// setInterval(sendCursor, 1000);
 
 	fetchDocuments(documentId);
 });
