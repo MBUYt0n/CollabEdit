@@ -7,7 +7,7 @@ const {
 	updateDocument,
 	deleteDocument,
 	shareDocument,
-	getUserId
+	getUserId,
 } = require("./docs");
 const { authenticateToken } = require("./middleware");
 

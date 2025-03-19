@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (!Array.isArray(documents)) {
 					documents = [documents];
 				}
-
+				console.log(documents);
 				documents.forEach((doc) => {
 					const dropdown = document.createElement("div");
 					dropdown.className = "dropdown";

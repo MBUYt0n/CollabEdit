@@ -21,11 +21,10 @@ async function fetchDocument(documentId) {
 }
 
 async function showDocuments(userId) {
-	const [result] = await pool.query(
+	const result = await pool.query(
 		"SELECT id, title, content FROM documents where user_id = ?",
 		[userId]
 	);
-
 	return result;
 }
 
@@ -67,7 +66,6 @@ async function getUserId(username) {
 	const result = await pool.query("SELECT id FROM users WHERE username = ?", [
 		username,
 	]);
-	console.log(result);
 	return result[0].id;
 }
 
