@@ -24,17 +24,16 @@ async function showDocuments(userId) {
 		"SELECT * FROM documents where user_id = ?",
 		[userId]
 	);
-	
+
 	return result;
 }
 
-async function createDocument(userId, title, content) {
-	const [result] = await pool.query(
-		"INSERT INTO documents (user_id, title, content) VALUES (?, ?, ?)",
-		[userId, title, content]
+async function createDocument(userId, title) {
+	const result = await pool.query(
+		"INSERT INTO documents (user_id, title) VALUES (?, ?)",
+		[userId, title]
 	);
-
-	return result.insertId;
+	return Number(result.insertId);
 }
 
 async function updateDocument(documentId, content) {

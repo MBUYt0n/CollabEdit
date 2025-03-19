@@ -8,8 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 	createDocumentButton.addEventListener("click", async () => {
 		const title = prompt("Enter document title:");
-		const content = prompt("Enter document content:");
-		if (title && content) {
+		if (title) {
 			try {
 				const response = await fetch(
 					"http://localhost:3000/documents/new",
@@ -21,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								"token"
 							)}`,
 						},
-						body: JSON.stringify({ title, content }),
+						body: JSON.stringify({ title }),
 					}
 				);
 				if (response.ok) {
@@ -50,8 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			);
 			if (response.status === 200) {
-				const documents = await response.json();
+				let documents = await response.json();
 				fileListContainer.innerHTML = "";
+				if (typeof documents !== "array") {
+					documents = [documents];
+				}
+
 				documents.forEach((doc) => {
 					const docButton = document.createElement("button");
 					docButton.textContent = doc.title;

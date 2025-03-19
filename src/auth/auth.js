@@ -19,7 +19,10 @@ async function registerUser(username, password) {
 		"INSERT INTO users (username, password) VALUES (?, ?)",
 		[username, hashedPassword]
 	);
-	return result.insertId;
+	const id = await pool.query("SELECT id FROM users WHERE username = (?)", [
+		username,
+	]);
+	return id[0].id;
 }
 
 async function authenticateUser(username, password) {

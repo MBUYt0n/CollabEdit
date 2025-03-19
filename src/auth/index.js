@@ -17,8 +17,8 @@ app.use(cors());
 app.post("/register", async (req, res) => {
 	const { username, password } = req.body;
 	try {
-		await registerUser(username, password);
-		const token = createToken(username);
+		const userID = await registerUser(username, password);
+		const token = createToken(userID);
 		res.status(201).send({ token });
 	} catch (error) {
 		console.error("Error registering user:", error);

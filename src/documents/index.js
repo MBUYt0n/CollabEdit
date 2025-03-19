@@ -30,10 +30,11 @@ app.get("/fetch", authenticateToken, async (req, res) => {
 });
 
 app.post("/new", authenticateToken, async (req, res) => {
-	const userId = req.user.id;
-	const { title, content } = req.body;
+	const userId = req.userId;
+	const { title } = req.body;
 	try {
-		const documentId = await createDocument(userId, title, content);
+		const documentId = await createDocument(userId, title);
+		console.log(documentId);
 		res.status(201).send({ documentId });
 	} catch (error) {
 		console.error("Error creating document:", error);
