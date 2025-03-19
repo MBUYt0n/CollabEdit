@@ -124,24 +124,24 @@ services:
         volumes:
             - ./src/documents:/home/CollabEdit/src
 
-    # collab:
-    #     image: server
-    #     container_name: collab
-    #     depends_on:
-    #         - mariadb
-    #         - kafka
-    #         - redis
-    #     networks:
-    #         - collab
-    #     environment:
-    #         - DB_HOST=mariadb
-    #         - DB_USER=${MARIADB_USER}
-    #         - DB_PASSWORD=${MARIADB_PASSWORD}
-    #         - DB_NAME=${MARIADB_DATABASE}
-    #     ports:
-    #         - "8080:8080"
-    #     volumes:
-    #         - ./src/collab:/home/CollabEdit
+    collab:
+        image: server
+        container_name: collab
+        depends_on:
+            - mariadb
+            - kafka
+            - redis
+        networks:
+            - collab
+        environment:
+            - DB_HOST=mariadb
+            - DB_USER=${MARIADB_USER}
+            - DB_PASSWORD=${MARIADB_PASSWORD}
+            - DB_NAME=${MARIADB_DATABASE}
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./src/collab:/home/CollabEdit
 
     # web1:
     #     image: node:18-alpine

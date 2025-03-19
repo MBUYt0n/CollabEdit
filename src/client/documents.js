@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					const openButton = document.createElement("button");
 					openButton.textContent = "Open";
 					openButton.addEventListener("click", () => {
-						showNotification(`Document Content: ${doc.content}`);
+						window.location.href = `./editor.html?docId=${doc.id}`
 					});
 					dropdownContent.appendChild(openButton);
 					if (doc.isOwner) {
