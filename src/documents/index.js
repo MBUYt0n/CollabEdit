@@ -6,6 +6,8 @@ const {
 	createDocument,
 	updateDocument,
 	deleteDocument,
+	shareDocument,
+	getUserId
 } = require("./docs");
 const { authenticateToken } = require("./middleware");
 
@@ -34,10 +36,29 @@ app.post("/new", authenticateToken, async (req, res) => {
 	const { title } = req.body;
 	try {
 		const documentId = await createDocument(userId, title);
-		console.log(documentId);
 		res.status(201).send({ documentId });
 	} catch (error) {
 		console.error("Error creating document:", error);
+		res.status(500).send({ error: "Internal Server Error" });
+	}
+});
+
+app.post("/share", authenticateToken, async (req, res) => {
+	const { documentId, sharedUserId } = req.body;
+	if (!sharedUserId) {
+		id = req.userId;
+	} else {
+		id = await getUserId(sharedUserId);
+	}
+	try {
+		const affectedRows = await shareDocument(documentId, id);
+		if (affectedRows > 0) {
+			res.status(200).send({ message: "Document shared successfully" });
+		} else {
+			res.status(404).send({ error: "Document not found" });
+		}
+	} catch (error) {
+		console.error("Error sharing document:", error);
 		res.status(500).send({ error: "Internal Server Error" });
 	}
 });

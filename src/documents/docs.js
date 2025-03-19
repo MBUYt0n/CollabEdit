@@ -12,16 +12,17 @@ const pool = mariadb.createPool({
 });
 
 async function fetchDocument(documentId) {
-	const [result] = await pool.query("SELECT * FROM documents WHERE id = ?", [
-		documentId,
-	]);
+	const [result] = await pool.query(
+		"SELECT id, title, content FROM documents WHERE id = ?",
+		[documentId]
+	);
 
 	return result[0];
 }
 
 async function showDocuments(userId) {
 	const [result] = await pool.query(
-		"SELECT * FROM documents where user_id = ?",
+		"SELECT id, title, content FROM documents where user_id = ?",
 		[userId]
 	);
 
@@ -53,10 +54,29 @@ async function deleteDocument(documentId) {
 	return result.affectedRows;
 }
 
+async function shareDocument(documentId, userId) {
+	const result = await pool.query(
+		"INSERT INTO document_shares (document_id, user_id) VALUES (?, ?)",
+		[documentId, userId]
+	);
+
+	return result.affectedRows;
+}
+
+async function getUserId(username) {
+	const result = await pool.query("SELECT id FROM users WHERE username = ?", [
+		username,
+	]);
+	console.log(result);
+	return result[0].id;
+}
+
 module.exports = {
 	fetchDocument,
 	showDocuments,
 	createDocument,
 	updateDocument,
 	deleteDocument,
+	shareDocument,
+	getUserId,
 };

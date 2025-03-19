@@ -31,6 +31,44 @@
 				width: 100%;
 				margin: 5px 0;
 			}
+			#notification {
+				position: fixed;
+				bottom: 20px;
+				left: 50%;
+				transform: translateX(-50%);
+				background-color: #333;
+				color: #fff;
+				padding: 10px 20px;
+				border-radius: 5px;
+				display: none;
+				z-index: 1000;
+			}
+			.dropdown {
+				position: relative;
+				display: inline-block;
+			}
+			.dropdown-content {
+				display: none;
+				position: absolute;
+				background-color: #f9f9f9;
+				min-width: 160px;
+				box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+				z-index: 1;
+			}
+			.dropdown-content button {
+				color: black;
+				padding: 12px 16px;
+				text-decoration: none;
+				display: block;
+				width: 100%;
+				text-align: left;
+			}
+			.dropdown-content button:hover {
+				background-color: #f1f1f1;
+			}
+			.dropdown:hover .dropdown-content {
+				display: block;
+			}
 		</style>
 	</head>
 	<body>
@@ -42,6 +80,7 @@
 				<div id="file-list-container"></div>
 			</div>
 		</div>
+		<div id="notification"></div>
 		<script src="documents.js"></script>
 	</body>
 </html>
