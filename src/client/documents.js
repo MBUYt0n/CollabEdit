@@ -35,9 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				);
 				if (response.ok) {
 					showNotification("Document created successfully");
-					const res = await response.json();
-					const { documentId } = res;
-					shareDocument(documentId);
 					fetchDocuments();
 				} else {
 					showNotification("Failed to create document");
@@ -67,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (!Array.isArray(documents)) {
 					documents = [documents];
 				}
-				console.log(documents);
 				documents.forEach((doc) => {
 					const dropdown = document.createElement("div");
 					dropdown.className = "dropdown";
@@ -85,19 +81,19 @@ document.addEventListener("DOMContentLoaded", () => {
 						showNotification(`Document Content: ${doc.content}`);
 					});
 					dropdownContent.appendChild(openButton);
-
-					const shareButton = document.createElement("button");
-					shareButton.textContent = "Share";
-					shareButton.addEventListener("click", () => {
-						const sharedUserId = prompt(
-							"Enter user ID to share with:"
-						);
-						if (sharedUserId) {
-							shareDocument(doc.id, sharedUserId);
-						}
-					});
-					dropdownContent.appendChild(shareButton);
-
+					if (doc.isOwner) {
+						const shareButton = document.createElement("button");
+						shareButton.textContent = "Share";
+						shareButton.addEventListener("click", () => {
+							const sharedUserId = prompt(
+								"Enter user ID to share with:"
+							);
+							if (sharedUserId) {
+								shareDocument(doc.id, sharedUserId);
+							}
+						});
+						dropdownContent.appendChild(shareButton);
+					}
 					dropdown.appendChild(dropdownContent);
 					fileListContainer.appendChild(dropdown);
 				});

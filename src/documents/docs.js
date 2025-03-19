@@ -22,8 +22,15 @@ async function fetchDocument(documentId) {
 
 async function showDocuments(userId) {
 	const result = await pool.query(
-		"SELECT id, title, content FROM documents where user_id = ?",
-		[userId]
+		`SELECT documents.id, documents.title, documents.content, true as isOwner
+        FROM documents
+        WHERE documents.user_id = (?)
+        UNION
+        SELECT documents.id, documents.title, documents.content, false as isOwner
+        FROM documents
+        JOIN document_shares ON documents.id = document_shares.document_id
+        WHERE document_shares.user_id = (?)`,
+		[userId, userId]
 	);
 	return result;
 }
