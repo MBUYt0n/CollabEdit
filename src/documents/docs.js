@@ -16,8 +16,7 @@ async function fetchDocument(documentId) {
 		"SELECT id, title, content FROM documents WHERE id = ?",
 		[documentId]
 	);
-
-	return result[0];
+	return result;
 }
 
 async function showDocuments(userId) {

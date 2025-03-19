@@ -63,7 +63,7 @@ app.post("/share", authenticateToken, async (req, res) => {
 	}
 });
 
-app.get("/documents/:id", authenticateToken, async (req, res) => {
+app.get("/docs/:id", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	try {
 		const document = await fetchDocument(documentId);
@@ -78,7 +78,7 @@ app.get("/documents/:id", authenticateToken, async (req, res) => {
 	}
 });
 
-app.put("/documents/:id", authenticateToken, async (req, res) => {
+app.put("/docs/:id", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	const { content } = req.body;
 	try {
@@ -94,7 +94,7 @@ app.put("/documents/:id", authenticateToken, async (req, res) => {
 	}
 });
 
-app.delete("/documents/:id", authenticateToken, async (req, res) => {
+app.delete("/docs/:id", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	try {
 		const affectedRows = await deleteDocument(documentId);
