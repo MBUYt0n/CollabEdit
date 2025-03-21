@@ -70,11 +70,15 @@ const connections = new Map();
 			} else if (parsedMessage.type === "code-update") {
 				console.log(`Update from ${clientId}:`, parsedMessage.changes);
 
-				await redisClient.hSet(
-					`document:${parsedMessage.documentId}`,
-					`code:${clientId}T${Date.now()}`,
-					JSON.stringify(parsedMessage.changes)
-				);
+				const { documentId, changes } = parsedMessage;
+				for (const change of changes) {
+					const { line, text } = change;
+					await redisClient.hSet(
+						`document:${documentId}`,
+						`line:${line}`,
+						JSON.stringify({ clientId, text })
+					);
+				}
 
 				await producer.send({
 					topic: "code-updates",
@@ -87,6 +91,12 @@ const connections = new Map();
 						},
 					],
 				});
+			} else if (parsedMessage.type === "commit-document") {
+				const { content, documentId } = parsedMessage;
+				await pool.query(
+					"UPDATE documents SET content = ? WHERE id = ?",
+					[content, documentId]
+				);
 			}
 		});
 
@@ -98,14 +108,3 @@ const connections = new Map();
 
 	return wss;
 })();
-
-async function commitDocument(documentId) {
-	const documentKey = `document:${documentId}`;
-	const documentContent = await redisClient.hGetAll(documentKey);
-	const [result] = await pool.query(
-		"UPDATE documents SET content = ? WHERE id = ?",
-		[content, documentId]
-	);
-
-	return result.affectedRows;
-}

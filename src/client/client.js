@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+	const commitButton = document.getElementById("commit");
 	const socket = new WebSocket("ws://localhost:8080");
 	const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
 		mode: "javascript",
@@ -75,7 +76,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		if (changes.length > 0) {
-			socket.send(JSON.stringify({ type: "code-update", documentId, changes }));
+			socket.send(
+				JSON.stringify({ type: "code-update", documentId, changes })
+			);
 			prevCode = currentCode;
 		}
 	}
@@ -105,6 +108,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		const language = document.getElementById("language").value;
 		editor.setOption("mode", language);
 	}
+
+	function commitDocument() {
+		const content = editor.getValue();
+		socket.send(
+			JSON.stringify({
+				type: "commit-document",
+				documentId,
+				content,
+			})
+		);
+	}
+
+	commitButton.addEventListener("click", commitDocument);
 
 	// function sendCursor() {
 	// 	const cursor = editor.getCursor();
