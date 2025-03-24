@@ -92,11 +92,7 @@ const connections = new Map();
 					],
 				});
 			} else if (parsedMessage.type === "commit-document") {
-				const { content, documentId } = parsedMessage;
-				await pool.query(
-					"UPDATE documents SET content = ? WHERE id = ?",
-					[content, documentId]
-				);
+				commitDocument(parsedMessage);
 			}
 		});
 
@@ -108,3 +104,11 @@ const connections = new Map();
 
 	return wss;
 })();
+
+async function commitDocument(parsedMessage) {
+	const { content, documentId } = parsedMessage;
+	await pool.query("UPDATE documents SET content = ? WHERE id = ?", [
+		content,
+		documentId,
+	]);
+}
