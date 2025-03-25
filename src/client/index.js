@@ -1,5 +1,87 @@
-const button = document.getElementById("create-new-file");
+document.addEventListener("DOMContentLoaded", () => {
+	const loginForm = document.getElementById("login-form");
+	const registerForm = document.getElementById("register-form");
+	const loginError = document.getElementById("login-error");
+	const registerError = document.getElementById("register-error");
+	const authContainer = document.getElementById("auth-container");
+	const registerContainer = document.getElementById("register-container");
+	const showRegisterLink = document.getElementById("show-register");
+	const showLoginLink = document.getElementById("show-login");
 
-button.addEventListener("click", async () => {
-	fetch("/api/editor", { method: "GET" });
+	showRegisterLink.addEventListener("click", (event) => {
+		event.preventDefault();
+		authContainer.style.display = "none";
+		registerContainer.style.display = "block";
+	});
+
+	showLoginLink.addEventListener("click", (event) => {
+		event.preventDefault();
+		registerContainer.style.display = "none";
+		authContainer.style.display = "block";
+	});
+
+	loginForm.addEventListener("submit", async (event) => {
+		event.preventDefault();
+
+		const username = document.getElementById("username").value;
+		const password = document.getElementById("password").value;
+
+		try {
+			const response = await fetch("http://localhost:3000/auth/login", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ username, password }),
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				sessionStorage.setItem("token", data.token);
+				window.location.href = "/documents.html";
+			} else {
+				loginError.style.display = "block";
+			}
+		} catch (error) {
+			console.error("Error logging in:", error);
+			loginError.style.display = "block";
+		}
+	});
+
+	registerForm.addEventListener("submit", async (event) => {
+		event.preventDefault();
+
+		const username = document.getElementById("register-username").value;
+		const password = document.getElementById("register-password").value;
+
+		try {
+			const response = await fetch(
+				"http://localhost:3000/auth/register",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ username, password }),
+				}
+			);
+			if (response.ok) {
+				const data = await response.json();
+				sessionStorage.setItem("token", data.token);
+				window.location.href = "/documents.html";
+			} else {
+				registerError.style.display = "block";
+			}
+		} catch (error) {
+			console.error("Error registering:", error);
+			registerError.style.display = "block";
+		}
+	});
+
+	const token = sessionStorage.getItem("token");
+	if (token) {
+		window.location.href = "/documents.html";
+	} else {
+		authContainer.style.display = "block";
+	}
 });

@@ -1,6 +1,19 @@
 const WebSocket = require("ws");
 const { Kafka } = require("kafkajs");
 const { createClient } = require("redis");
+const mariadb = require("mariadb");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
+const { JWT_SECRET, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+
+const pool = mariadb.createPool({
+	host: DB_HOST,
+	user: DB_USER,
+	password: DB_PASSWORD,
+	database: DB_NAME,
+	connectionLimit: 10,
+});
 
 const kafka = new Kafka({ clientId: "code-editor", brokers: ["kafka:9092"] });
 const producer = kafka.producer();
@@ -11,7 +24,7 @@ redisClient.on("error", (err) => console.error("Redis Error:", err));
 
 const connections = new Map();
 
-async function setupWebSockets(server) {
+(async () => {
 	console.log("Initializing WebSockets...");
 
 	await redisClient.connect();
@@ -19,13 +32,17 @@ async function setupWebSockets(server) {
 	await consumer.connect();
 	await consumer.subscribe({ topic: "code-updates", fromBeginning: false });
 
-	const wss = new WebSocket.Server({ server });
+	const wss = new WebSocket.Server({ port: 8080 });
 
 	consumer.run({
 		eachMessage: async ({ message }) => {
 			const data = JSON.parse(message.value.toString());
+			const senderId = data.id;
 			wss.clients.forEach((client) => {
-				if (client.readyState === WebSocket.OPEN) {
+				if (
+					client.readyState === WebSocket.OPEN &&
+					client !== connections.get(senderId)
+				) {
 					client.send(JSON.stringify(data));
 				}
 			});
@@ -39,16 +56,29 @@ async function setupWebSockets(server) {
 			const parsedMessage = JSON.parse(message);
 
 			if (parsedMessage.type === "register") {
-				clientId = parsedMessage.id;
-				connections.set(clientId, socket);
-				console.log(`Client registered: ${clientId}`);
+				token = parsedMessage.token;
+				try {
+					const { userId } = jwt.verify(token, JWT_SECRET);
+					console.log(`Client connected: ${userId}`);
+					clientId = userId;
+					connections.set(clientId, socket);
+					console.log(`Client registered: ${clientId}`);
+				} catch (error) {
+					console.error("Error verifying JWT:", error);
+					socket.close();
+				}
 			} else if (parsedMessage.type === "code-update") {
 				console.log(`Update from ${clientId}:`, parsedMessage.changes);
 
-				await redisClient.set(
-					`code:${clientId}`,
-					JSON.stringify(parsedMessage.changes)
-				);
+				const { documentId, changes } = parsedMessage;
+				for (const change of changes) {
+					const { line, text } = change;
+					await redisClient.hSet(
+						`document:${documentId}`,
+						`line:${line}`,
+						JSON.stringify({ clientId, text })
+					);
+				}
 
 				await producer.send({
 					topic: "code-updates",
@@ -61,6 +91,8 @@ async function setupWebSockets(server) {
 						},
 					],
 				});
+			} else if (parsedMessage.type === "commit-document") {
+				commitDocument(parsedMessage);
 			}
 		});
 
@@ -71,6 +103,12 @@ async function setupWebSockets(server) {
 	});
 
 	return wss;
-}
+})();
 
-module.exports = { setupWebSockets };
+async function commitDocument(parsedMessage) {
+	const { content, documentId } = parsedMessage;
+	await pool.query("UPDATE documents SET content = ? WHERE id = ?", [
+		content,
+		documentId,
+	]);
+}
