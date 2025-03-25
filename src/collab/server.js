@@ -100,8 +100,12 @@ let docId = null;
 			}
 		});
 
-		socket.on("close", () => {
+		socket.on("close", async () => {
 			if (clientId) connections.delete(clientId);
+			if (connections.size === 0) {
+				await redisClient.del(`document:${docId}`);
+				docId = null;
+			}
 			console.log(`Client disconnected: ${clientId}`);
 		});
 	});
