@@ -3,6 +3,7 @@ const { Kafka } = require("kafkajs");
 const { createClient } = require("redis");
 const mariadb = require("mariadb");
 const jwt = require("jsonwebtoken");
+const Operation = require("./operation");
 require("dotenv").config();
 
 const { JWT_SECRET, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
@@ -55,9 +56,8 @@ let docId = null;
 
 		socket.on("message", async (message) => {
 			const parsedMessage = JSON.parse(message);
-
 			if (parsedMessage.type === "register") {
-				token = parsedMessage.token;
+				const token = parsedMessage.token;
 				try {
 					const { userId } = jwt.verify(token, JWT_SECRET);
 					console.log(`Client connected: ${userId}`);
@@ -72,17 +72,49 @@ let docId = null;
 				console.log(`Update from ${clientId}:`, parsedMessage.changes);
 
 				const { documentId, changes } = parsedMessage;
-				if (!docId) {
-					docId = documentId;
-				}
+
 				for (const change of changes) {
-					const { line, text } = change;
-					await redisClient.hSet(
-						`document:${documentId}`,
-						`line:${line}`,
-						JSON.stringify({ clientId, text })
+					const { line, position, text, type } = change;
+					const operation = new Operation(type, line, position, text);
+
+					const existingOps = await redisClient.lRange(
+						`document:${documentId}:ops`,
+						0,
+						-1
+					);
+					let transformedOp = operation;
+
+					for (const existingOpStr of existingOps) {
+						const existingOp = JSON.parse(existingOpStr);
+						[transformedOp] = Operation.transform(
+							transformedOp,
+							existingOp
+						);
+					}
+
+					if (transformedOp.type === "delete") {
+						await redisClient.hDel(
+							`document:${documentId}`,
+							`line:${transformedOp.line}`
+						);
+					} else {
+						await redisClient.hSet(
+							`document:${documentId}`,
+							`line:${transformedOp.line}`,
+							JSON.stringify({
+								clientId,
+								text: transformedOp.text,
+							})
+						);
+					}
+
+					await redisClient.rPush(
+						`document:${documentId}:ops`,
+						JSON.stringify(transformedOp)
 					);
 				}
+
+				if (!docId) docId = documentId;
 
 				await producer.send({
 					topic: "code-updates",
@@ -96,15 +128,20 @@ let docId = null;
 					],
 				});
 			} else if (parsedMessage.type === "commit-document") {
-				commitDocument(parsedMessage);
+				await commitDocument(parsedMessage);
 			}
 		});
 
-		socket.on("close", () => {
+		socket.on("close", async () => {
 			if (clientId) connections.delete(clientId);
+			if (connections.size === 0) {
+				await redisClient.del(`document:${docId}`);
+				docId = null;
+			}
 			console.log(`Client disconnected: ${clientId}`);
 		});
 	});
+
 	setInterval(async () => {
 		await commitDocument({ documentId: docId });
 	}, 60000);
@@ -129,7 +166,7 @@ async function commitDocument(parsedMessage) {
 	]);
 	console.log(`Document ${documentId} committed successfully`);
 
-	connections.forEach((socket, clientId) => {
+	connections.forEach((socket) => {
 		if (socket.readyState === WebSocket.OPEN) {
 			socket.send(
 				JSON.stringify({ type: "commit-notification", documentId })
