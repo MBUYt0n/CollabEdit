@@ -48,9 +48,18 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 
+	const showNotification = (message) => {
+		const notification = document.getElementById("notification");
+		notification.textContent = "Document saved";
+		notification.style.display = "block";
+		setTimeout(() => {
+			notification.style.display = "none";
+		}, 3000);
+	};
+
 	socket.onopen = () => {
 		socket.send(JSON.stringify({ type: "register", token }));
-		console.log("Connected to WebSocket server with ID:");
+		console.log("Connected to WebSocket server");
 	};
 
 	socket.onmessage = (event) => {
@@ -59,6 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			applyChanges(message.change);
 		} else if (message.cursor) {
 			showCursor(message);
+		} else if (message.type === "commit-notification") {
+			showNotification(message.message);
 		}
 	};
 

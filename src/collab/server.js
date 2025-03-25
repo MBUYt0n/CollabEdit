@@ -23,6 +23,7 @@ const redisClient = createClient({ url: "redis://redis:6379" });
 redisClient.on("error", (err) => console.error("Redis Error:", err));
 
 const connections = new Map();
+let docId = null;
 
 (async () => {
 	console.log("Initializing WebSockets...");
@@ -71,6 +72,9 @@ const connections = new Map();
 				console.log(`Update from ${clientId}:`, parsedMessage.changes);
 
 				const { documentId, changes } = parsedMessage;
+				if (!docId) {
+					docId = documentId;
+				}
 				for (const change of changes) {
 					const { line, text } = change;
 					await redisClient.hSet(
@@ -101,14 +105,35 @@ const connections = new Map();
 			console.log(`Client disconnected: ${clientId}`);
 		});
 	});
-
+	setInterval(async () => {
+		await commitDocument({ documentId: docId });
+	}, 60000);
 	return wss;
 })();
 
 async function commitDocument(parsedMessage) {
-	const { content, documentId } = parsedMessage;
+	const { documentId } = parsedMessage;
+
+	const lines = await redisClient.hGetAll(`document:${documentId}`);
+	const content = [];
+
+	for (const key in lines) {
+		const lineData = JSON.parse(lines[key]);
+		const lineNumber = parseInt(key.split(":")[1]);
+		content[lineNumber] = lineData.text;
+	}
+
 	await pool.query("UPDATE documents SET content = ? WHERE id = ?", [
-		content,
+		content.join("\n"),
 		documentId,
 	]);
+	console.log(`Document ${documentId} committed successfully`);
+
+	connections.forEach((socket, clientId) => {
+		if (socket.readyState === WebSocket.OPEN) {
+			socket.send(
+				JSON.stringify({ type: "commit-notification", documentId })
+			);
+		}
+	});
 }
