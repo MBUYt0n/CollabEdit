@@ -14,6 +14,7 @@ const pool = mariadb.createPool({
 });
 
 async function registerUser(username, password) {
+	console.log(username, password);
 	const hashedPassword = await bcrypt.hash(password, 10);
 	const result = await pool.query(
 		"INSERT INTO users (username, password) VALUES (?, ?)",
