@@ -80,12 +80,20 @@ document.addEventListener("DOMContentLoaded", () => {
 	function sendCode() {
 		const currentCode = editor.getValue().split("\n");
 		const changes = [];
-		for (let i = 0; i < currentCode.length; i++) {
+		len = Math.max(prevCode.length, currentCode.length);
+		for (let i = 0; i < len; i++) {
 			if (currentCode[i] !== prevCode[i]) {
-				changes.push({ line: i, text: currentCode[i] });
+				changes.push({ line: i, text: currentCode[i], type: "insert" });
+			}
+			else if (prevCode[i] === undefined) {
+				changes.push({ line: i, text: "", type: "insert" });
+			}
+			else if (currentCode[i] === undefined) {
+				changes.push({ line: i, text: "", type: "delete" });
 			}
 		}
-
+		
+		console.log(changes);
 		if (changes.length > 0) {
 			socket.send(
 				JSON.stringify({ type: "code-update", documentId, changes })
@@ -177,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 	cursorElement.style.top = `${cursorPos.top}px`;
 	// }
 
-	editor.on("change", sendCode);
+	setInterval(sendCode, 100);
 	// setInterval(sendCursor, 1000);
 
 	fetchDocuments(documentId);
