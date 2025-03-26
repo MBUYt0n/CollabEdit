@@ -61,5 +61,4 @@ This setup will give you a **fast, scalable, and real-time collaboration system*
 ## Things to do now
 - Merge conflicts - by storing the correct version in redis and broadcasting that
 - cursor sharing
-- deletion
 - launcher

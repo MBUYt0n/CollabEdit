@@ -52,10 +52,13 @@ async function updateDocument(documentId, content) {
 }
 
 async function deleteDocument(documentId) {
-	const [result] = await pool.query("DELETE FROM documents WHERE id = ?", [
+	const r = await pool.query(
+		"DELETE FROM document_shares WHERE document_id = ?",
+		[documentId]
+	);
+	const result = await pool.query("DELETE FROM documents WHERE id = ?", [
 		documentId,
 	]);
-
 	return result.affectedRows;
 }
 

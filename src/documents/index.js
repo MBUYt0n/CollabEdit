@@ -78,22 +78,6 @@ app.get("/docs/:id", authenticateToken, async (req, res) => {
 	}
 });
 
-app.put("/docs/:id", authenticateToken, async (req, res) => {
-	const documentId = req.params.id;
-	const { content } = req.body;
-	try {
-		const affectedRows = await updateDocument(documentId, content);
-		if (affectedRows > 0) {
-			res.status(200).send({ message: "Document updated successfully" });
-		} else {
-			res.status(404).send({ error: "Document not found" });
-		}
-	} catch (error) {
-		console.error("Error updating document:", error);
-		res.status(500).send({ error: "Internal Server Error" });
-	}
-});
-
 app.delete("/docs/:id", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	try {

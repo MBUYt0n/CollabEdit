@@ -78,10 +78,22 @@ document.addEventListener("DOMContentLoaded", () => {
 					const openButton = document.createElement("button");
 					openButton.textContent = "Open";
 					openButton.addEventListener("click", () => {
-						window.location.href = `./editor.html?docId=${doc.id}`
+						window.location.href = `./editor.html?docId=${doc.id}`;
 					});
 					dropdownContent.appendChild(openButton);
 					if (doc.isOwner) {
+						const deleteButton = document.createElement("button");
+						deleteButton.textContent = "Delete";
+						deleteButton.addEventListener("click", async () => {
+							const confirmDelete = confirm(
+								"Are you sure you want to delete this document?"
+							);
+							if (confirmDelete) {
+								deleteDocument(doc.id);
+							}
+						});
+						dropdownContent.appendChild(deleteButton);
+
 						const shareButton = document.createElement("button");
 						shareButton.textContent = "Share";
 						shareButton.addEventListener("click", () => {
@@ -105,6 +117,32 @@ document.addEventListener("DOMContentLoaded", () => {
 		} catch (error) {
 			console.error("Error fetching documents:", error);
 			showNotification("Failed to fetch documents");
+		}
+	};
+
+	const deleteDocument = async (documentId) => {
+		try {
+			const response = await fetch(
+				`http://localhost:3000/documents/docs/${documentId}`,
+				{
+					method: "DELETE",
+					headers: {
+						Authorization: `Bearer ${sessionStorage.getItem(
+							"token"
+						)}`,
+					},
+				}
+			);
+			console.log(response);
+			if (response.ok) {
+				showNotification("Document deleted successfully");
+				fetchDocuments();
+			} else {
+				showNotification("Failed to delete document");
+			}
+		} catch (error) {
+			console.error("Error deleting document:", error);
+			showNotification("Failed to delete document");
 		}
 	};
 
