@@ -66,6 +66,15 @@
 			</select>
 			<textarea id="editor"></textarea>
 			<button id="commit">Save</button>
+			<button id="view-versions">View Versions</button>
+		</div>
+
+		<div id="versions-modal" style="display: none">
+			<div class="modal-content">
+				<h3>Document Versions</h3>
+				<ul id="versions-list"></ul>
+				<button id="close-modal">Close</button>
+			</div>
 		</div>
 		<div id="notification"></div>
 		<script src="client.js"></script>

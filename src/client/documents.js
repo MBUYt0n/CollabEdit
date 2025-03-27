@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const fetchDocuments = async () => {
 		try {
-			const response = await fetch(`${base_url}/documents/fetch`, {
+			const response = await fetch(`${base_url}/documents/show`, {
 				headers: {
 					Authorization: `Bearer ${sessionStorage.getItem("token")}`,
 				},

@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const commitButton = document.getElementById("commit");
+	const versionbutton = document.getElementById("view-versions");
 	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
 	const socket = new WebSocket(`ws://${window.location.hostname}:8080`);
 	const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
@@ -91,8 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				changes.push({ line: i, text: "", type: "delete" });
 			}
 		}
-
-		console.log(changes);
 		if (changes.length > 0) {
 			socket.send(
 				JSON.stringify({ type: "code-update", documentId, changes })
@@ -138,8 +137,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		);
 	}
 
-	commitButton.addEventListener("click", commitDocument);
+	function viewVersions(documentId) {
+		socket.send(
+			JSON.stringify({
+				type: "view-versions",
+				documentId,
+			})
+		);
+	}
 
+	commitButton.addEventListener("click", commitDocument);
+	versionbutton.addEventListener("click", () => {
+		viewVersions(documentId);
+	});
 	// function sendCursor() {
 	// 	const cursor = editor.getCursor();
 	// 	const id = localStorage.getItem("client_id");

@@ -14,7 +14,6 @@ const pool = mariadb.createPool({
 	database: DB_NAME,
 	connectionLimit: 10,
 });
-
 const kafka = new Kafka({ clientId: "code-editor", brokers: ["kafka:9092"] });
 const producer = kafka.producer();
 const consumer = kafka.consumer({ groupId: "editor-group" });
@@ -33,7 +32,7 @@ let docId = null;
 	await consumer.connect();
 	await consumer.subscribe({ topic: "code-updates", fromBeginning: false });
 
-	const wss = new WebSocket.Server({ port: 8080 });
+	const wss = new WebSocket.Server({ host: "0.0.0.0", port: 8080 });
 
 	consumer.run({
 		eachMessage: async ({ message }) => {
@@ -103,6 +102,11 @@ let docId = null;
 				});
 			} else if (parsedMessage.type === "commit-document") {
 				await commitDocument(parsedMessage);
+			} else if (parsedMessage.type === "view-versions") {
+				const documentId = parsedMessage.documentId;
+				socket.send(
+					JSON.stringify({ type: "view-versions", documentId })
+				);
 			}
 		});
 
@@ -133,10 +137,7 @@ async function commitDocument(parsedMessage) {
 		content[lineNumber] = lineData.text;
 	}
 
-	await pool.query("UPDATE documents SET content = ? WHERE id = ?", [
-		content.join("\n"),
-		documentId,
-	]);
+	socket.send; //tbd
 	console.log(`Document ${documentId} committed successfully`);
 
 	connections.forEach((socket) => {

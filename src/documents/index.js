@@ -17,7 +17,7 @@ const PORT = 3002;
 app.use(express.json());
 app.use(cors());
 
-app.get("/fetch", authenticateToken, async (req, res) => {
+app.get("/show", authenticateToken, async (req, res) => {
 	const userId = req.userId;
 	try {
 		const documents = await showDocuments(userId);
@@ -78,6 +78,22 @@ app.get("/docs/:id", authenticateToken, async (req, res) => {
 	}
 });
 
+app.put("/docs/:id", authenticateToken, async (req, res) => {
+	const documentId = req.params.id;
+	const { content } = req.body;
+	try {
+		const affectedRows = await updateDocument(documentId, content);
+		if (affectedRows > 0) {
+			res.status(200).send({ message: "Document updated successfully" });
+		} else {
+			res.status(404).send({ error: "Document not found" });
+		}
+	} catch (error) {
+		console.error("Error updating document:", error);
+		res.status(500).send({ error: "Internal Server Error" });
+	}
+});
+
 app.delete("/docs/:id", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	try {
@@ -89,6 +105,21 @@ app.delete("/docs/:id", authenticateToken, async (req, res) => {
 		}
 	} catch (error) {
 		console.error("Error deleting document:", error);
+		res.status(500).send({ error: "Internal Server Error" });
+	}
+});
+
+app.get("/docs/:id/versions", authenticateToken, async (req, res) => {
+	const documentId = req.params.id;
+	try {
+		const versions = await fetchDocumentVersions(documentId);
+		if (versions) {
+			res.status(200).json(versions);
+		} else {
+			res.status(404).send({ error: "Document not found" });
+		}
+	} catch (error) {
+		console.error("Error fetching document versions:", error);
 		res.status(500).send({ error: "Internal Server Error" });
 	}
 });
