@@ -100,14 +100,7 @@ let docId = null;
 						},
 					],
 				});
-			} else if (parsedMessage.type === "commit-document") {
-				await commitDocument(parsedMessage);
-			} else if (parsedMessage.type === "view-versions") {
-				const documentId = parsedMessage.documentId;
-				socket.send(
-					JSON.stringify({ type: "view-versions", documentId })
-				);
-			}
+			} 
 		});
 
 		socket.on("close", async () => {
@@ -119,32 +112,7 @@ let docId = null;
 			console.log(`Client disconnected: ${clientId}`);
 		});
 	});
-	setInterval(async () => {
-		await commitDocument({ documentId: docId });
-	}, 60000);
 	return wss;
 })();
 
-async function commitDocument(parsedMessage) {
-	const { documentId } = parsedMessage;
 
-	const lines = await redisClient.hGetAll(`document:${documentId}`);
-	const content = [];
-
-	for (const key in lines) {
-		const lineData = JSON.parse(lines[key]);
-		const lineNumber = parseInt(key.split(":")[1]);
-		content[lineNumber] = lineData.text;
-	}
-
-	socket.send; //tbd
-	console.log(`Document ${documentId} committed successfully`);
-
-	connections.forEach((socket) => {
-		if (socket.readyState === WebSocket.OPEN) {
-			socket.send(
-				JSON.stringify({ type: "commit-notification", documentId })
-			);
-		}
-	});
-}

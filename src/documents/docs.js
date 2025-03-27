@@ -52,19 +52,18 @@ async function createDocument(userId, title) {
 
 async function updateDocument(documentId, content) {
 	const version_no = await pool.query(
-		"SELECT MAX(version_no) FROM document_versions WHERE document_id = ?",
+		"SELECT MAX(version_no) as version_no FROM document_versions WHERE document_id = ?",
 		[documentId]
 	);
-
 	const result = await pool.query(
 		"UPDATE document_versions SET pinned = false WHERE document_id = ? AND pinned = true",
 		[documentId]
 	);
-
 	const result1 = await pool.query(
 		"INSERT INTO document_versions (document_id, content, version_no, pinned) VALUES (?, ?, ?, ?)",
-		[documentId, content, version_no.version_no + 1, true]
+		[documentId, content, version_no[0].version_no + 1, true]
 	);
+	return result1.affectedRows;
 }
 
 async function deleteDocument(documentId) {
@@ -100,6 +99,26 @@ async function getUserId(username) {
 	return result[0].id;
 }
 
+async function getDocumentVersions(documentId) {
+	const result = await pool.query(
+		"SELECT version_no, content, created_at FROM document_versions WHERE document_id = ?",
+		[documentId]
+	);
+	return result;
+}
+
+async function pinVersion(documentId, versionNo) {
+	const result = await pool.query(
+		"UPDATE document_versions SET pinned = false WHERE document_id = ? AND pinned = true",
+		[documentId]
+	);
+	const result1 = await pool.query(
+		"UPDATE document_versions SET pinned = true WHERE document_id = ? AND version_no = ?",
+		[documentId, versionNo]
+	);
+	return result1.affectedRows;
+}
+
 module.exports = {
 	fetchDocument,
 	showDocuments,
@@ -108,4 +127,6 @@ module.exports = {
 	shareDocument,
 	updateDocument,
 	getUserId,
+	getDocumentVersions,
+	pinVersion,
 };

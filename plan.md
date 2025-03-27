@@ -1,7 +1,6 @@
 ## Things to do now
 - features
    - merge conflicts - deletion
-   - versionining
    - cursor sharing
 
 - backend

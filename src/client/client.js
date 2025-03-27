@@ -1,6 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const commitButton = document.getElementById("commit");
 	const versionbutton = document.getElementById("view-versions");
+	const sideMenu = document.getElementById("side-menu");
+	const closeSideMenuButton = document.getElementById("close-side-menu");
+	const versionsContainer = document.getElementById("versions-container");
+
+	closeSideMenuButton.addEventListener("click", () => {
+		sideMenu.style.right = "-300px"; // Close the side menu
+	});
 	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
 	const socket = new WebSocket(`ws://${window.location.hostname}:8080`);
 	const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
@@ -52,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const showNotification = (message) => {
 		const notification = document.getElementById("notification");
-		notification.textContent = "Document saved";
+		notification.textContent = message;
 		notification.style.display = "block";
 		setTimeout(() => {
 			notification.style.display = "none";
@@ -126,24 +133,97 @@ document.addEventListener("DOMContentLoaded", () => {
 		editor.setOption("mode", language);
 	}
 
-	function commitDocument() {
+	async function commitDocument() {
 		const content = editor.getValue();
-		socket.send(
-			JSON.stringify({
-				type: "commit-document",
-				documentId,
-				content,
-			})
+		const response = await fetch(
+			`${base_url}/documents/docs/${documentId}`,
+			{
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+				},
+				body: JSON.stringify({ content }),
+			}
 		);
+		if (response.ok) {
+			showNotification("Document committed successfully");
+		} else {
+			console.error("Failed to commit document:", response.statusText);
+		}
 	}
 
-	function viewVersions(documentId) {
-		socket.send(
-			JSON.stringify({
-				type: "view-versions",
-				documentId,
-			})
-		);
+	async function pinVersion(version) {
+		try {
+			const response = await fetch(
+				`${base_url}/documents/docs/${documentId}/pin`,
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${sessionStorage.getItem(
+							"token"
+						)}`,
+					},
+					body: JSON.stringify({ versionNo: version.version_no }),
+				}
+			);
+			if (response.ok) {
+				showNotification("Version pinned successfully");
+				sideMenu.style.right = "-300px";
+				fetchDocuments(documentId);
+			} else {
+				console.error("Failed to pin version:", response.statusText);
+			}
+		} catch (error) {
+			console.error("Error pinning version:", error);
+		}
+	}
+
+	async function viewVersions(documentId) {
+		try {
+			const response = await fetch(
+				`${base_url}/documents/docs/${documentId}/versions`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${sessionStorage.getItem(
+							"token"
+						)}`,
+					},
+				}
+			);
+			if (response.ok) {
+				const versions = await response.json();
+				versionsContainer.innerHTML = "";
+
+				versions.forEach((version) => {
+					const versionItem = document.createElement("div");
+					versionItem.classList.add("version-item");
+
+					versionItem.onclick = () => pinVersion(version);
+
+					const timestamp = document.createElement("p");
+					timestamp.textContent = `Updated at: ${new Date(
+						version.created_at
+					).toLocaleString()}`;
+
+					const preview = document.createElement("pre");
+					preview.textContent = version.content.slice(0, 100) + "...";
+
+					versionItem.appendChild(timestamp);
+					versionItem.appendChild(preview);
+					versionsContainer.appendChild(versionItem);
+				});
+
+				sideMenu.style.right = "0";
+			} else {
+				console.error("Failed to fetch versions:", response.statusText);
+			}
+		} catch (error) {
+			console.error("Error fetching versions:", error);
+		}
 	}
 
 	commitButton.addEventListener("click", commitDocument);

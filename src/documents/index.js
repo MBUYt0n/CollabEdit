@@ -8,6 +8,8 @@ const {
 	deleteDocument,
 	shareDocument,
 	getUserId,
+	getDocumentVersions,
+	pinVersion,
 } = require("./docs");
 const { authenticateToken } = require("./middleware");
 
@@ -112,7 +114,7 @@ app.delete("/docs/:id", authenticateToken, async (req, res) => {
 app.get("/docs/:id/versions", authenticateToken, async (req, res) => {
 	const documentId = req.params.id;
 	try {
-		const versions = await fetchDocumentVersions(documentId);
+		const versions = await getDocumentVersions(documentId);
 		if (versions) {
 			res.status(200).json(versions);
 		} else {
@@ -120,6 +122,22 @@ app.get("/docs/:id/versions", authenticateToken, async (req, res) => {
 		}
 	} catch (error) {
 		console.error("Error fetching document versions:", error);
+		res.status(500).send({ error: "Internal Server Error" });
+	}
+});
+
+app.put("/docs/:id/pin", authenticateToken, async (req, res) => {
+	const documentId = req.params.id;
+	const { versionNo } = req.body;
+	try {
+		const affectedRows = await pinVersion(documentId, versionNo);
+		if (affectedRows > 0) {
+			res.status(200).send({ message: "Version pinned successfully" });
+		} else {
+			res.status(404).send({ error: "Document not found" });
+		}
+	} catch (error) {
+		console.error("Error pinning document version:", error);
 		res.status(500).send({ error: "Internal Server Error" });
 	}
 });
