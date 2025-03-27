@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		console.error("No token found, redirecting to login page");
 		window.location.href = "/";
 	}
+	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
 
 	const showNotification = (message) => {
 		notification.textContent = message;
@@ -20,19 +21,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		const title = prompt("Enter document title:");
 		if (title) {
 			try {
-				const response = await fetch(
-					"http://localhost:3000/documents/new",
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${sessionStorage.getItem(
-								"token"
-							)}`,
-						},
-						body: JSON.stringify({ title }),
-					}
-				);
+				const response = await fetch(`${base_url}/documents/new`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${sessionStorage.getItem(
+							"token"
+						)}`,
+					},
+					body: JSON.stringify({ title }),
+				});
 				if (response.ok) {
 					showNotification("Document created successfully");
 					fetchDocuments();
@@ -48,16 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const fetchDocuments = async () => {
 		try {
-			const response = await fetch(
-				"http://localhost:3000/documents/fetch",
-				{
-					headers: {
-						Authorization: `Bearer ${sessionStorage.getItem(
-							"token"
-						)}`,
-					},
-				}
-			);
+			const response = await fetch(`${base_url}/documents/fetch`, {
+				headers: {
+					Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+				},
+			});
 			if (response.status === 200) {
 				let documents = await response.json();
 				fileListContainer.innerHTML = "";
@@ -123,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const deleteDocument = async (documentId) => {
 		try {
 			const response = await fetch(
-				`http://localhost:3000/documents/docs/${documentId}`,
+				`${base_url}/documents/docs/${documentId}`,
 				{
 					method: "DELETE",
 					headers: {
@@ -148,19 +141,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const shareDocument = async (documentId, sharedUserId = null) => {
 		try {
-			const response = await fetch(
-				"http://localhost:3000/documents/share",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${sessionStorage.getItem(
-							"token"
-						)}`,
-					},
-					body: JSON.stringify({ documentId, sharedUserId }),
-				}
-			);
+			const response = await fetch(`${base_url}/documents/share`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+				},
+				body: JSON.stringify({ documentId, sharedUserId }),
+			});
 			if (response.ok) {
 				showNotification("Document shared successfully");
 			} else {

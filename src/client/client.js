@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const commitButton = document.getElementById("commit");
-	const socket = new WebSocket("ws://localhost:8080");
+	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
+	const socket = new WebSocket(`ws://${window.location.hostname}:8080`);
 	const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
 		mode: "javascript",
 		lineNumbers: true,
@@ -26,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const fetchDocuments = async (documentId) => {
 		try {
 			const response = await fetch(
-				`http://localhost:3000/documents/docs/${documentId}`,
+				`${base_url}/documents/docs/${documentId}`,
 				{
 					headers: {
 						Authorization: `Bearer ${sessionStorage.getItem(
@@ -84,15 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		for (let i = 0; i < len; i++) {
 			if (currentCode[i] !== prevCode[i]) {
 				changes.push({ line: i, text: currentCode[i], type: "insert" });
-			}
-			else if (prevCode[i] === undefined) {
+			} else if (prevCode[i] === undefined) {
 				changes.push({ line: i, text: "", type: "insert" });
-			}
-			else if (currentCode[i] === undefined) {
+			} else if (currentCode[i] === undefined) {
 				changes.push({ line: i, text: "", type: "delete" });
 			}
 		}
-		
+
 		console.log(changes);
 		if (changes.length > 0) {
 			socket.send(

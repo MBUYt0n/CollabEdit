@@ -14,7 +14,6 @@ const pool = mariadb.createPool({
 });
 
 async function registerUser(username, password) {
-	console.log(username, password);
 	const hashedPassword = await bcrypt.hash(password, 10);
 	const result = await pool.query(
 		"INSERT INTO users (username, password) VALUES (?, ?)",
@@ -48,13 +47,8 @@ function createToken(userId) {
 	return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
 }
 
-function verifyToken(token) {
-	return jwt.verify(token, JWT_SECRET);
-}
-
 module.exports = {
 	registerUser,
 	authenticateUser,
 	createToken,
-	verifyToken,
 };

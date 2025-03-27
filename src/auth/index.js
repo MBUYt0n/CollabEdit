@@ -4,9 +4,7 @@ const {
 	registerUser,
 	authenticateUser,
 	createToken,
-	verifyToken,
 } = require("./auth");
-const router = express.Router();
 
 const app = express();
 const PORT = 3001;
@@ -15,7 +13,6 @@ app.use(express.json());
 app.use(cors());
 
 app.post("/register", async (req, res) => {
-	console.log(req.body);
 	const { username, password } = req.body;
 	try {
 		const userID = await registerUser(username, password);
