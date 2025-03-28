@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS documents (
     title VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    language ENUM("javascript", "python", "julia", "html") DEFAULT "javascript",
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

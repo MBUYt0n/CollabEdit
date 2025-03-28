@@ -10,6 +10,7 @@ const {
 	getDocumentVersions,
 	pinVersion,
 	getUserId,
+	changeLanguage,
 } = require("./docs");
 const { authenticateToken } = require("./middleware");
 
@@ -140,6 +141,22 @@ app.put("/docs/:id/pin", authenticateToken, async (req, res) => {
 		}
 	} catch (error) {
 		console.error("Error pinning document version:", error);
+		res.status(500).send({ error: "Internal Server Error" });
+	}
+});
+
+app.put("/docs/:id/language", authenticateToken, async (req, res) => {
+	const documentId = req.params.id;
+	const { language } = req.body;
+	try {
+		const affectedRows = await changeLanguage(documentId, language);
+		if (affectedRows > 0) {
+			res.status(200).send({ message: "Document language updated" });
+		} else {
+			res.status(404).send({ error: "Document not found" });
+		}
+	} catch (error) {
+		console.error("Error updating document language:", error);
 		res.status(500).send({ error: "Internal Server Error" });
 	}
 });

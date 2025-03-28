@@ -13,7 +13,7 @@ const pool = mariadb.createPool({
 
 async function fetchDocument(documentId) {
 	const [result] = await pool.query(
-		`SELECT documents.title, document_versions.content, document_versions.version_no
+		`SELECT documents.title, documents.language, document_versions.content, document_versions.version_no
 		FROM documents
 		JOIN document_versions ON documents.id = document_versions.document_id
 		WHERE documents.id = (?) AND document_versions.pinned = true`,
@@ -103,7 +103,7 @@ async function getUserId(username) {
 			"SELECT id FROM users WHERE username = (?)",
 			[username]
 		);
-		return result[0].id; 
+		return result[0].id;
 	} catch (error) {
 		console.error("Error fetching user ID:", error);
 		throw error;
@@ -130,6 +130,14 @@ async function pinVersion(documentId, versionNo) {
 	return result1.affectedRows;
 }
 
+async function changeLanguage(documentId, language) {
+	const result = await pool.query(
+		"UPDATE documents SET language = (?) WHERE id = (?)",
+		[language, documentId]
+	);
+	return result.affectedRows;
+}
+
 module.exports = {
 	fetchDocument,
 	showDocuments,
@@ -140,4 +148,5 @@ module.exports = {
 	getDocumentVersions,
 	pinVersion,
 	getUserId,
+	changeLanguage,
 };

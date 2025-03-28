@@ -5,8 +5,6 @@
    - syntax errors 
 
 - backend
-   - better auth
-   - rbac sharing
    - input validation
    - TLS/SSL
 
