@@ -56,7 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			sessionStorage.setItem("token", idToken);
 			sessionStorage.setItem("username", userCredential.user.email);
-
 			window.location.href = "/documents.html";
 		} catch (error) {
 			console.error("Error logging in:", error);

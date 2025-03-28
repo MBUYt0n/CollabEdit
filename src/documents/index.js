@@ -11,14 +11,10 @@ const {
 	getDocumentVersions,
 	pinVersion,
 } = require("./docs");
-const admin = require("firebase-admin");
 const { authenticateToken } = require("./middleware");
 
 const app = express();
 const PORT = 3002;
-admin.initializeApp({
-	credential: admin.credential.applicationDefault(),
-});
 app.use(express.json());
 app.use(cors());
 
