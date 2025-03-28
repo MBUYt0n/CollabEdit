@@ -7,15 +7,15 @@ const {
 	updateDocument,
 	deleteDocument,
 	shareDocument,
-	getUserId,
 	getDocumentVersions,
 	pinVersion,
+	getUserId,
+	changeLanguage,
 } = require("./docs");
 const { authenticateToken } = require("./middleware");
 
 const app = express();
 const PORT = 3002;
-
 app.use(express.json());
 app.use(cors());
 
@@ -46,14 +46,17 @@ app.post("/new", authenticateToken, async (req, res) => {
 });
 
 app.post("/share", authenticateToken, async (req, res) => {
-	const { documentId, sharedUserId } = req.body;
+	const { documentId, sharedUserName } = req.body;
+	const sharedUserId = await getUserId(sharedUserName);
 	if (!sharedUserId) {
-		id = req.userId;
-	} else {
-		id = await getUserId(sharedUserId);
+		return res.status(400).send({ error: "No user ID provided" });
 	}
 	try {
-		const affectedRows = await shareDocument(documentId, id);
+		const affectedRows = await shareDocument(
+			documentId,
+			sharedUserId,
+			"editor"
+		);
 		if (affectedRows > 0) {
 			res.status(200).send({ message: "Document shared successfully" });
 		} else {
@@ -138,6 +141,22 @@ app.put("/docs/:id/pin", authenticateToken, async (req, res) => {
 		}
 	} catch (error) {
 		console.error("Error pinning document version:", error);
+		res.status(500).send({ error: "Internal Server Error" });
+	}
+});
+
+app.put("/docs/:id/language", authenticateToken, async (req, res) => {
+	const documentId = req.params.id;
+	const { language } = req.body;
+	try {
+		const affectedRows = await changeLanguage(documentId, language);
+		if (affectedRows > 0) {
+			res.status(200).send({ message: "Document language updated" });
+		} else {
+			res.status(404).send({ error: "Document not found" });
+		}
+	} catch (error) {
+		console.error("Error updating document language:", error);
 		res.status(500).send({ error: "Internal Server Error" });
 	}
 });

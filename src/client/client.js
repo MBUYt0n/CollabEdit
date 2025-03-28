@@ -4,9 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	const sideMenu = document.getElementById("side-menu");
 	const closeSideMenuButton = document.getElementById("close-side-menu");
 	const versionsContainer = document.getElementById("versions-container");
+	const languageSelect = document.getElementById("language");
 
+	languageSelect.addEventListener("change", changeLanguage);
 	closeSideMenuButton.addEventListener("click", () => {
-		sideMenu.style.right = "-300px"; // Close the side menu
+		sideMenu.style.right = "-300px";
 	});
 	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
 	const socket = new WebSocket(`ws://${window.location.hostname}:8080`);
@@ -18,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 	let prevCode = editor.getValue().split("\n");
 	const token = sessionStorage.getItem("token");
+	const username = sessionStorage.getItem("username");
 
 	const cursors = {};
 	const colors = {};
@@ -48,6 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				const content = await response.json();
 				const documentContent = content.content || "";
 				editor.setValue(documentContent);
+				const language = content.language;
+				languageSelect.value = language;
+				editor.setOption("mode", language);
 				prevCode = editor.getValue().split("\n");
 			} else {
 				console.error("Failed to fetch document:", response.statusText);
@@ -67,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	socket.onopen = () => {
-		socket.send(JSON.stringify({ type: "register", token }));
+		socket.send(JSON.stringify({ type: "register", username }));
 		console.log("Connected to WebSocket server");
 	};
 
@@ -128,9 +134,26 @@ document.addEventListener("DOMContentLoaded", () => {
 		prevCode = editor.getValue().split("\n");
 	}
 
-	function changeLanguage() {
+	async function changeLanguage() {
 		const language = document.getElementById("language").value;
 		editor.setOption("mode", language);
+		const response = await fetch(
+			`${base_url}/documents/docs/${documentId}/language`,
+			{
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+				},
+				body: JSON.stringify({ language }),
+			}
+		);
+		console.log(response);
+		if (response.ok) {
+			showNotification("Language changed successfully");
+		} else {
+			console.error("Failed to change language:", response.statusText);
+		}
 	}
 
 	async function commitDocument() {

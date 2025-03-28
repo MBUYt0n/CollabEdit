@@ -1,9 +1,15 @@
-const mariadb = require("mariadb");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const admin = require("firebase-admin");
 require("dotenv").config();
+const path = require("path");
+const serviceAccountPath = path.join(__dirname, "./firebase-adminsdk.json");
+const serviceAccount = require(serviceAccountPath);
+const mariadb = require("mariadb");
 
-const { JWT_SECRET, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+admin.initializeApp({
+	credential: admin.credential.cert(serviceAccount),
+});
+
+const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
 
 const pool = mariadb.createPool({
 	host: DB_HOST,
@@ -13,42 +19,32 @@ const pool = mariadb.createPool({
 	connectionLimit: 10,
 });
 
-async function registerUser(username, password) {
-	const hashedPassword = await bcrypt.hash(password, 10);
-	const result = await pool.query(
-		"INSERT INTO users (username, password) VALUES (?, ?)",
-		[username, hashedPassword]
-	);
-	const id = await pool.query("SELECT id FROM users WHERE username = (?)", [
-		username,
-	]);
-	return id[0].id;
+const auth = admin.auth();
+
+async function registerUser(userId, username) {
+	try {
+		const result = await pool.query(
+			"INSERT INTO users (id, username) VALUES (?, ?)",
+			[userId, username]
+		);
+		return result.affectedRows > 0;
+	} catch (error) {
+		console.error("Error registering user:", error);
+		throw error;
+	}
 }
 
-async function authenticateUser(username, password) {
-	const [user] = await pool.query("SELECT * FROM users WHERE username = ?", [
-		username,
-	]);
-
-	if (!user) {
-		return null;
+async function verifyUser(token) {
+	try {
+		const decodedToken = await auth.verifyIdToken(token);
+		return decodedToken;
+	} catch (error) {
+		console.error("Error verifying user:", error);
+		throw error;
 	}
-
-	const passwordMatch = await bcrypt.compare(password, user.password);
-
-	if (!passwordMatch) {
-		return null;
-	}
-
-	return user.id;
-}
-
-function createToken(userId) {
-	return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
 }
 
 module.exports = {
-	registerUser,
-	authenticateUser,
-	createToken,
+	verifyUser,
+	registerUser
 };
