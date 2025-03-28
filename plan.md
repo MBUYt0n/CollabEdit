@@ -2,6 +2,7 @@
 - features
    - merge conflicts - deletion
    - cursor sharing
+   - syntax errors 
 
 - backend
    - better auth
