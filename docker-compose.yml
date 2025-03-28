@@ -60,7 +60,9 @@ services:
             - ./db:/docker-entrypoint-initdb.d
 
     auth:
-        image: auth
+        build:
+            context: ./src/auth
+            dockerfile: Dockerfile
         container_name: auth
         networks:
             - collab
@@ -69,14 +71,15 @@ services:
             - DB_USER=${MARIADB_USER}
             - DB_PASSWORD=${MARIADB_PASSWORD}
             - DB_NAME=${MARIADB_DATABASE}
-            - MARIADB_PASSWORD=${MARIADB_PASSWORD}
         ports:
             - "3001:3001"
         volumes:
             - ./src/auth:/home/CollabEdit/src
 
     api-gateway:
-        image: api-gateway
+        build:
+            context: ./src/api-gateway
+            dockerfile: Dockerfile
         container_name: api-gateway
         networks:
             - collab
@@ -109,7 +112,9 @@ services:
             - "8000:8000"
 
     documents:
-        image: documents
+        build:
+            context: ./src/documents
+            dockerfile: Dockerfile
         container_name: documents
         networks:
             - collab
@@ -125,7 +130,9 @@ services:
             - ./src/documents:/home/CollabEdit/src
 
     collab:
-        image: server
+        build:
+            context: ./src/collab
+            dockerfile: Dockerfile
         container_name: collab
         depends_on:
             - mariadb
