@@ -2,7 +2,6 @@ const WebSocket = require("ws");
 const { Kafka } = require("kafkajs");
 const { createClient } = require("redis");
 const mariadb = require("mariadb");
-const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const { JWT_SECRET, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
@@ -55,17 +54,11 @@ let docId = null;
 		socket.on("message", async (message) => {
 			const parsedMessage = JSON.parse(message);
 			if (parsedMessage.type === "register") {
-				token = parsedMessage.token;
-				try {
-					const { userId } = jwt.verify(token, JWT_SECRET);
-					console.log(`Client connected: ${userId}`);
-					clientId = userId;
+				clientId = parsedMessage.username;
+				if (!connections.has(clientId)) {
 					connections.set(clientId, socket);
-					console.log(`Client registered: ${clientId}`);
-				} catch (error) {
-					console.error("Error verifying JWT:", error);
-					socket.close();
 				}
+				console.log(`Client registered: ${clientId}`);
 			} else if (parsedMessage.type === "code-update") {
 				console.log(`Update from ${clientId}:`, parsedMessage.changes);
 
@@ -100,7 +93,7 @@ let docId = null;
 						},
 					],
 				});
-			} 
+			}
 		});
 
 		socket.on("close", async () => {
@@ -114,5 +107,3 @@ let docId = null;
 	});
 	return wss;
 })();
-
-

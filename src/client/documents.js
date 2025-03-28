@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						const openButton = document.createElement("button");
 						openButton.textContent = "Open";
 						openButton.addEventListener("click", () => {
-							window.location.href = `./editor.html?docId=${doc.id}`;
+							openDocument(doc.id);
 						});
 						dropdownContent.appendChild(openButton);
 
@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						const openButton = document.createElement("button");
 						openButton.textContent = "Open";
 						openButton.addEventListener("click", () => {
-							window.location.href = `./editor.html?docId=${doc.id}`;
+							openDocument(doc.id);
 						});
 						dropdownContent.appendChild(openButton);
 					}
@@ -166,6 +166,26 @@ document.addEventListener("DOMContentLoaded", () => {
 		} catch (error) {
 			console.error("Error sharing document:", error);
 			showNotification("Failed to share document");
+		}
+	};
+
+	const openDocument = async (documentId) => {
+		try {
+			const response = await fetch(`${base_url}/auth/verify`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ token }),
+			});
+			if (response.ok) {
+				window.location.href = `./editor.html?docId=${documentId}`;
+			} else {
+				showNotification("Failed to open document");
+			}
+		} catch (error) {
+			console.error("Error opening document:", error);
+			showNotification("Failed to open document");
 		}
 	};
 

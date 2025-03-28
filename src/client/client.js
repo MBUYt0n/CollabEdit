@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const versionsContainer = document.getElementById("versions-container");
 
 	closeSideMenuButton.addEventListener("click", () => {
-		sideMenu.style.right = "-300px"; 
+		sideMenu.style.right = "-300px";
 	});
 	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
 	const socket = new WebSocket(`ws://${window.location.hostname}:8080`);
@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 	let prevCode = editor.getValue().split("\n");
 	const token = sessionStorage.getItem("token");
+	const username = sessionStorage.getItem("username");
 
 	const cursors = {};
 	const colors = {};
@@ -67,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	socket.onopen = () => {
-		socket.send(JSON.stringify({ type: "register", token }));
+		socket.send(JSON.stringify({ type: "register", username }));
 		console.log("Connected to WebSocket server");
 	};
 
