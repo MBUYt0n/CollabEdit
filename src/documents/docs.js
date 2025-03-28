@@ -13,7 +13,10 @@ const pool = mariadb.createPool({
 
 async function fetchDocument(documentId) {
 	const [result] = await pool.query(
-		"SELECT id, title, content FROM documents WHERE id = ?",
+		`SELECT documents.title, document_versions.content, document_versions.version_no
+		FROM documents
+		JOIN document_versions ON documents.id = document_versions.document_id
+		WHERE documents.id = (?) AND document_versions.pinned = true`,
 		[documentId]
 	);
 	return result;
@@ -21,11 +24,11 @@ async function fetchDocument(documentId) {
 
 async function showDocuments(userId) {
 	const result = await pool.query(
-		`SELECT documents.id, documents.title, documents.content, true as isOwner
+		`SELECT documents.id, documents.title, true as isOwner
         FROM documents
         WHERE documents.user_id = (?)
         UNION
-        SELECT documents.id, documents.title, documents.content, false as isOwner
+        SELECT documents.id, documents.title, false as isOwner
         FROM documents
         JOIN document_shares ON documents.id = document_shares.document_id
         WHERE document_shares.user_id = (?)`,
@@ -37,25 +40,46 @@ async function showDocuments(userId) {
 async function createDocument(userId, title) {
 	const result = await pool.query(
 		"INSERT INTO documents (user_id, title) VALUES (?, ?)",
-		[userId, title]
+		[userId, title, 1]
+	);
+
+	const result1 = await pool.query(
+		"INSERT INTO document_versions (document_id, content, version_no, pinned) VALUES (?, ?, ?, ?)",
+		[result.insertId, "", 1, true]
 	);
 	return Number(result.insertId);
 }
 
 async function updateDocument(documentId, content) {
-	const [result] = await pool.query(
-		"UPDATE documents SET content = ? WHERE id = ?",
-		[content, documentId]
+	const version_no = await pool.query(
+		"SELECT MAX(version_no) as version_no FROM document_versions WHERE document_id = ?",
+		[documentId]
 	);
-
-	return result.affectedRows;
+	const result = await pool.query(
+		"UPDATE document_versions SET pinned = false WHERE document_id = ? AND pinned = true",
+		[documentId]
+	);
+	const result1 = await pool.query(
+		"INSERT INTO document_versions (document_id, content, version_no, pinned) VALUES (?, ?, ?, ?)",
+		[documentId, content, version_no[0].version_no + 1, true]
+	);
+	return result1.affectedRows;
 }
 
 async function deleteDocument(documentId) {
-	const [result] = await pool.query("DELETE FROM documents WHERE id = ?", [
+	const r = await pool.query(
+		"DELETE FROM document_shares WHERE document_id = ?",
+		[documentId]
+	);
+
+	const result1 = await pool.query(
+		"DELETE FROM document_versions WHERE document_id = ?",
+		[documentId]
+	);
+
+	const result = await pool.query("DELETE FROM documents WHERE id = ?", [
 		documentId,
 	]);
-
 	return result.affectedRows;
 }
 
@@ -75,12 +99,34 @@ async function getUserId(username) {
 	return result[0].id;
 }
 
+async function getDocumentVersions(documentId) {
+	const result = await pool.query(
+		"SELECT version_no, content, created_at FROM document_versions WHERE document_id = ?",
+		[documentId]
+	);
+	return result;
+}
+
+async function pinVersion(documentId, versionNo) {
+	const result = await pool.query(
+		"UPDATE document_versions SET pinned = false WHERE document_id = ? AND pinned = true",
+		[documentId]
+	);
+	const result1 = await pool.query(
+		"UPDATE document_versions SET pinned = true WHERE document_id = ? AND version_no = ?",
+		[documentId, versionNo]
+	);
+	return result1.affectedRows;
+}
+
 module.exports = {
 	fetchDocument,
 	showDocuments,
 	createDocument,
-	updateDocument,
 	deleteDocument,
 	shareDocument,
+	updateDocument,
 	getUserId,
+	getDocumentVersions,
+	pinVersion,
 };

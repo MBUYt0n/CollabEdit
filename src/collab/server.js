@@ -14,7 +14,6 @@ const pool = mariadb.createPool({
 	database: DB_NAME,
 	connectionLimit: 10,
 });
-
 const kafka = new Kafka({ clientId: "code-editor", brokers: ["kafka:9092"] });
 const producer = kafka.producer();
 const consumer = kafka.consumer({ groupId: "editor-group" });
@@ -33,7 +32,7 @@ let docId = null;
 	await consumer.connect();
 	await consumer.subscribe({ topic: "code-updates", fromBeginning: false });
 
-	const wss = new WebSocket.Server({ port: 8080 });
+	const wss = new WebSocket.Server({ host: "0.0.0.0", port: 8080 });
 
 	consumer.run({
 		eachMessage: async ({ message }) => {
@@ -55,7 +54,6 @@ let docId = null;
 
 		socket.on("message", async (message) => {
 			const parsedMessage = JSON.parse(message);
-
 			if (parsedMessage.type === "register") {
 				token = parsedMessage.token;
 				try {
@@ -76,12 +74,19 @@ let docId = null;
 					docId = documentId;
 				}
 				for (const change of changes) {
-					const { line, text } = change;
-					await redisClient.hSet(
-						`document:${documentId}`,
-						`line:${line}`,
-						JSON.stringify({ clientId, text })
-					);
+					const { line, text, type } = change;
+					if (type === "insert") {
+						await redisClient.hSet(
+							`document:${documentId}`,
+							`line:${line}`,
+							JSON.stringify({ clientId, text })
+						);
+					} else if (type === "delete") {
+						await redisClient.hDel(
+							`document:${documentId}`,
+							`line:${line}`
+						);
+					}
 				}
 
 				await producer.send({
@@ -95,9 +100,7 @@ let docId = null;
 						},
 					],
 				});
-			} else if (parsedMessage.type === "commit-document") {
-				commitDocument(parsedMessage);
-			}
+			} 
 		});
 
 		socket.on("close", async () => {
@@ -109,35 +112,7 @@ let docId = null;
 			console.log(`Client disconnected: ${clientId}`);
 		});
 	});
-	setInterval(async () => {
-		await commitDocument({ documentId: docId });
-	}, 60000);
 	return wss;
 })();
 
-async function commitDocument(parsedMessage) {
-	const { documentId } = parsedMessage;
 
-	const lines = await redisClient.hGetAll(`document:${documentId}`);
-	const content = [];
-
-	for (const key in lines) {
-		const lineData = JSON.parse(lines[key]);
-		const lineNumber = parseInt(key.split(":")[1]);
-		content[lineNumber] = lineData.text;
-	}
-
-	await pool.query("UPDATE documents SET content = ? WHERE id = ?", [
-		content.join("\n"),
-		documentId,
-	]);
-	console.log(`Document ${documentId} committed successfully`);
-
-	connections.forEach((socket, clientId) => {
-		if (socket.readyState === WebSocket.OPEN) {
-			socket.send(
-				JSON.stringify({ type: "commit-notification", documentId })
-			);
-		}
-	});
-}

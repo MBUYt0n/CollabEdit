@@ -6,8 +6,13 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-
-app.use(cors());
+app.use(
+	cors({
+		origin: "*",
+		methods: ["GET", "POST", "PUT", "DELETE"],
+		allowedHeaders: ["Content-Type", "Authorization"],
+	})
+);
 
 const proxyRequest = (serviceUrl) => (req, res) => {
 	const url = `${serviceUrl}${req.url}`;
@@ -31,6 +36,6 @@ app.use("/auth", proxyRequest("http://auth:3001"));
 app.use("/documents", proxyRequest("http://documents:3002"));
 app.use("/collab", proxyRequest("http://collab:8080"));
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
 	console.log(`API Gateway running on http://localhost:${PORT}`);
 });

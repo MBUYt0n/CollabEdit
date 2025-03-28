@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const showRegisterLink = document.getElementById("show-register");
 	const showLoginLink = document.getElementById("show-login");
 
+	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
 	showRegisterLink.addEventListener("click", (event) => {
 		event.preventDefault();
 		authContainer.style.display = "none";
@@ -27,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		const password = document.getElementById("password").value;
 
 		try {
-			const response = await fetch("http://localhost:3000/auth/login", {
+			const response = await fetch(`${base_url}/auth/login`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -55,16 +56,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		const password = document.getElementById("register-password").value;
 
 		try {
-			const response = await fetch(
-				"http://localhost:3000/auth/register",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ username, password }),
-				}
-			);
+			const response = await fetch(`${base_url}/auth/register`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ username, password }),
+			});
 			if (response.ok) {
 				const data = await response.json();
 				sessionStorage.setItem("token", data.token);

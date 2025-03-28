@@ -4,9 +4,7 @@ const {
 	registerUser,
 	authenticateUser,
 	createToken,
-	verifyToken,
 } = require("./auth");
-const router = express.Router();
 
 const app = express();
 const PORT = 3001;

@@ -53,6 +53,69 @@
 				display: none;
 				z-index: 1000;
 			}
+			/* View Versions Button */
+			#view-versions {
+				position: fixed;
+				top: 10px;
+				right: 10px;
+				padding: 10px 20px;
+				background-color: #333;
+				color: #fff;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+				z-index: 1000;
+			}
+
+			/* Side Menu */
+			#side-menu {
+				position: fixed;
+				top: 0;
+				right: -300px;
+				width: 300px;
+				height: 100%;
+				background-color: #f9f9f9;
+				box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+				overflow-y: auto;
+				transition: right 0.3s ease;
+				padding: 10px;
+				z-index: 1000;
+			}
+
+			#close-side-menu {
+				position: absolute;
+				top: 10px;
+				left: 10px;
+				padding: 5px 10px;
+				background-color: #333;
+				color: #fff;
+				border: none;
+				cursor: pointer;
+			}
+
+			#versions-container {
+				margin-top: 50px;
+			}
+
+			.version-item {
+				margin-bottom: 10px;
+				padding: 10px;
+				border: 1px solid #ddd;
+				background-color: #fff;
+			}
+
+			.version-item p {
+				font-size: 12px;
+				color: #666;
+				margin-bottom: 5px;
+			}
+
+			.version-item pre {
+				font-size: 14px;
+				color: #333;
+				white-space: pre-wrap;
+				word-wrap: break-word;
+			}
 		</style>
 	</head>
 	<body>
@@ -66,6 +129,12 @@
 			</select>
 			<textarea id="editor"></textarea>
 			<button id="commit">Save</button>
+			<button id="view-versions">View Versions</button>
+		</div>
+
+		<div id="side-menu">
+			<button id="close-side-menu">Close</button>
+			<div id="versions-container"></div>
 		</div>
 		<div id="notification"></div>
 		<script src="client.js"></script>

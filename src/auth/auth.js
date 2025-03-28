@@ -47,13 +47,8 @@ function createToken(userId) {
 	return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
 }
 
-function verifyToken(token) {
-	return jwt.verify(token, JWT_SECRET);
-}
-
 module.exports = {
 	registerUser,
 	authenticateUser,
 	createToken,
-	verifyToken,
 };
