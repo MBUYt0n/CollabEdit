@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const app = initializeApp(firebaseConfig);
 	const auth = getAuth(app);
-
+	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
 	showRegisterLink.addEventListener("click", (event) => {
 		event.preventDefault();
 		authContainer.style.display = "none";
@@ -53,9 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				password
 			);
 			const idToken = await userCredential.user.getIdToken();
-
+			const username = userCredential.user.email.split("@")[0];
 			sessionStorage.setItem("token", idToken);
-			sessionStorage.setItem("username", userCredential.user.email);
+			sessionStorage.setItem("username", username);
 			window.location.href = "/documents.html";
 		} catch (error) {
 			console.error("Error logging in:", error);
@@ -76,6 +76,21 @@ document.addEventListener("DOMContentLoaded", () => {
 				password
 			);
 			const idToken = await userCredential.user.getIdToken();
+			const uid = userCredential.user.uid;
+			const username = userCredential.user.email.split("@")[0];
+
+			const response = await fetch(`${base_url}/auth/register/`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${idToken}`,
+				},
+				body: JSON.stringify({ uid, username }),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to register user in the database");
+			}
 
 			sessionStorage.setItem("token", idToken);
 			sessionStorage.setItem("username", userCredential.user.email);
@@ -83,6 +98,15 @@ document.addEventListener("DOMContentLoaded", () => {
 			window.location.href = "/documents.html";
 		} catch (error) {
 			console.error("Error registering:", error);
+
+			if (auth.currentUser) {
+				await auth.currentUser.delete().catch((deleteError) => {
+					console.error(
+						"Error rolling back user creation:",
+						deleteError
+					);
+				});
+			}
 			registerError.style.display = "block";
 		}
 	});

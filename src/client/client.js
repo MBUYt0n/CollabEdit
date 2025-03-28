@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const versionsContainer = document.getElementById("versions-container");
 
 	closeSideMenuButton.addEventListener("click", () => {
-		sideMenu.style.right = "-300px"; // Close the side menu
+		sideMenu.style.right = "-300px"; 
 	});
 	const base_url = `${window.location.protocol}//${window.location.hostname}:3000`;
 	const socket = new WebSocket(`ws://${window.location.hostname}:8080`);

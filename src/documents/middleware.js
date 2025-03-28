@@ -17,7 +17,6 @@ async function authenticateToken(req, res, next) {
 				},
 			}
 		);
-		console.log("Token verification response:", response.data);
 		req.userId = response.data.decodedToken.uid;
 		next();
 	} catch (error) {

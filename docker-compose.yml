@@ -65,13 +65,11 @@ services:
         networks:
             - collab
         environment:
-            - FIREBASE_API_KEY=${FIREBASE_API_KEY}
-            - FIREBASE_AUTH_DOMAIN=${FIREBASE_AUTH_DOMAIN}
-            - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
-            - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
-            - FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
-            - FIREBASE_APP_ID=${FIREBASE_APP_ID}
-            - FIREBASE_MEASUREMENT_ID=${FIREBASE_MEASUREMENT_ID}
+            - DB_HOST=mariadb
+            - DB_USER=${MARIADB_USER}
+            - DB_PASSWORD=${MARIADB_PASSWORD}
+            - DB_NAME=${MARIADB_DATABASE}
+            - MARIADB_PASSWORD=${MARIADB_PASSWORD}
         ports:
             - "3001:3001"
         volumes:
