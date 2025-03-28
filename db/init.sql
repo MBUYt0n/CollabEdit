@@ -25,10 +25,11 @@ CREATE TABLE IF NOT EXISTS document_versions (
     FOREIGN KEY (document_id) REFERENCES documents(id)
 );
 
-CREATE TABLE IF NOT EXISTS document_shares (
+CREATE TABLE document_roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     document_id INT NOT NULL,
     user_id VARCHAR(255) NOT NULL,
+    role ENUM('owner', 'editor') NOT NULL,
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

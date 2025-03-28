@@ -24,15 +24,11 @@ async function fetchDocument(documentId) {
 
 async function showDocuments(userId) {
 	const result = await pool.query(
-		`SELECT documents.id, documents.title, true as isOwner
-        FROM documents
-        WHERE documents.user_id = (?)
-        UNION
-        SELECT documents.id, documents.title, false as isOwner
-        FROM documents
-        JOIN document_shares ON documents.id = document_shares.document_id
-        WHERE document_shares.user_id = (?)`,
-		[userId, userId]
+		`SELECT documents.id, documents.title, document_roles.role
+		FROM documents
+		JOIN document_roles ON documents.id = document_roles.document_id
+		WHERE document_roles.user_id = ?`,
+		[userId]
 	);
 	return result;
 }
@@ -40,12 +36,17 @@ async function showDocuments(userId) {
 async function createDocument(userId, title) {
 	const result = await pool.query(
 		"INSERT INTO documents (user_id, title) VALUES (?, ?)",
-		[userId, title, 1]
+		[userId, title]
 	);
 
 	const result1 = await pool.query(
 		"INSERT INTO document_versions (document_id, content, version_no, pinned) VALUES (?, ?, ?, ?)",
 		[result.insertId, "", 1, true]
+	);
+
+	const result2 = await pool.query(
+		"INSERT INTO document_roles (document_id, user_id, role) VALUES (?, ?, ?)",
+		[result.insertId, userId, "owner"]
 	);
 	return Number(result.insertId);
 }
@@ -68,7 +69,7 @@ async function updateDocument(documentId, content) {
 
 async function deleteDocument(documentId) {
 	const r = await pool.query(
-		"DELETE FROM document_shares WHERE document_id = ?",
+		"DELETE FROM document_roles WHERE document_id = ?",
 		[documentId]
 	);
 
@@ -83,25 +84,35 @@ async function deleteDocument(documentId) {
 	return result.affectedRows;
 }
 
-async function shareDocument(documentId, userId) {
-	const result = await pool.query(
-		"INSERT INTO document_shares (document_id, user_id) VALUES (?, ?)",
-		[documentId, userId]
-	);
-
-	return result.affectedRows;
+async function shareDocument(documentId, userId, role) {
+	try {
+		const result = await pool.query(
+			"INSERT INTO document_roles (document_id, user_id, role) VALUES (?, ?, ?)",
+			[documentId, userId, role]
+		);
+		return result.affectedRows;
+	} catch (error) {
+		console.error("Error sharing document:", error);
+		throw error;
+	}
 }
 
 async function getUserId(username) {
-	const result = await pool.query("SELECT id FROM users WHERE username = ?", [
-		username,
-	]);
-	return result[0].id;
+	try {
+		const result = await pool.query(
+			"SELECT id FROM users WHERE username = (?)",
+			[username]
+		);
+		return result[0].id; 
+	} catch (error) {
+		console.error("Error fetching user ID:", error);
+		throw error;
+	}
 }
 
 async function getDocumentVersions(documentId) {
 	const result = await pool.query(
-		"SELECT version_no, content, created_at FROM document_versions WHERE document_id = ?",
+		"SELECT version_no, content, created_at FROM document_versions WHERE document_id = (?)",
 		[documentId]
 	);
 	return result;
@@ -109,11 +120,11 @@ async function getDocumentVersions(documentId) {
 
 async function pinVersion(documentId, versionNo) {
 	const result = await pool.query(
-		"UPDATE document_versions SET pinned = false WHERE document_id = ? AND pinned = true",
+		"UPDATE document_versions SET pinned = false WHERE document_id = (?) AND pinned = true",
 		[documentId]
 	);
 	const result1 = await pool.query(
-		"UPDATE document_versions SET pinned = true WHERE document_id = ? AND version_no = ?",
+		"UPDATE document_versions SET pinned = true WHERE document_id = (?) AND version_no = (?)",
 		[documentId, versionNo]
 	);
 	return result1.affectedRows;
@@ -126,7 +137,7 @@ module.exports = {
 	deleteDocument,
 	shareDocument,
 	updateDocument,
-	getUserId,
 	getDocumentVersions,
 	pinVersion,
+	getUserId,
 };

@@ -7,9 +7,9 @@ const {
 	updateDocument,
 	deleteDocument,
 	shareDocument,
-	getUserId,
 	getDocumentVersions,
 	pinVersion,
+	getUserId,
 } = require("./docs");
 const { authenticateToken } = require("./middleware");
 
@@ -45,14 +45,17 @@ app.post("/new", authenticateToken, async (req, res) => {
 });
 
 app.post("/share", authenticateToken, async (req, res) => {
-	const { documentId, sharedUserId } = req.body;
+	const { documentId, sharedUserName } = req.body;
+	const sharedUserId = await getUserId(sharedUserName);
 	if (!sharedUserId) {
-		id = req.userId;
-	} else {
-		id = await getUserId(sharedUserId);
+		return res.status(400).send({ error: "No user ID provided" });
 	}
 	try {
-		const affectedRows = await shareDocument(documentId, id);
+		const affectedRows = await shareDocument(
+			documentId,
+			sharedUserId,
+			"editor"
+		);
 		if (affectedRows > 0) {
 			res.status(200).send({ message: "Document shared successfully" });
 		} else {

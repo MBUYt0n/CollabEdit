@@ -68,13 +68,14 @@ document.addEventListener("DOMContentLoaded", () => {
 					const dropdownContent = document.createElement("div");
 					dropdownContent.className = "dropdown-content";
 
-					const openButton = document.createElement("button");
-					openButton.textContent = "Open";
-					openButton.addEventListener("click", () => {
-						window.location.href = `./editor.html?docId=${doc.id}`;
-					});
-					dropdownContent.appendChild(openButton);
-					if (doc.isOwner) {
+					if (doc.role === "owner") {
+						const openButton = document.createElement("button");
+						openButton.textContent = "Open";
+						openButton.addEventListener("click", () => {
+							window.location.href = `./editor.html?docId=${doc.id}`;
+						});
+						dropdownContent.appendChild(openButton);
+
 						const deleteButton = document.createElement("button");
 						deleteButton.textContent = "Delete";
 						deleteButton.addEventListener("click", async () => {
@@ -93,11 +94,19 @@ document.addEventListener("DOMContentLoaded", () => {
 							const sharedUserId = prompt(
 								"Enter user ID to share with:"
 							);
+							console.log(sharedUserId);
 							if (sharedUserId) {
 								shareDocument(doc.id, sharedUserId);
 							}
 						});
 						dropdownContent.appendChild(shareButton);
+					} else if (doc.role === "editor") {
+						const openButton = document.createElement("button");
+						openButton.textContent = "Open";
+						openButton.addEventListener("click", () => {
+							window.location.href = `./editor.html?docId=${doc.id}`;
+						});
+						dropdownContent.appendChild(openButton);
 					}
 					dropdown.appendChild(dropdownContent);
 					fileListContainer.appendChild(dropdown);
@@ -139,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 
-	const shareDocument = async (documentId, sharedUserId = null) => {
+	const shareDocument = async (documentId, sharedUserName) => {
 		try {
 			const response = await fetch(`${base_url}/documents/share`, {
 				method: "POST",
@@ -147,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${sessionStorage.getItem("token")}`,
 				},
-				body: JSON.stringify({ documentId, sharedUserId }),
+				body: JSON.stringify({ documentId, sharedUserName }),
 			});
 			if (response.ok) {
 				showNotification("Document shared successfully");
