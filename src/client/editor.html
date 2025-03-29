@@ -4,6 +4,7 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>WebSocket Code Editor</title>
+
 		<link
 			rel="stylesheet"
 			href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css"
@@ -12,8 +13,17 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchbrackets.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/lint/lint.min.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/lint/lint.min.css"
+		/>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/lint/javascript-lint.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/eslint/8.45.0/eslint.min.js"></script>
+
 		<style>
 			body {
 				font-family: Arial, sans-serif;
@@ -53,7 +63,6 @@
 				display: none;
 				z-index: 1000;
 			}
-			/* View Versions Button */
 			#view-versions {
 				position: fixed;
 				top: 10px;
@@ -67,7 +76,6 @@
 				z-index: 1000;
 			}
 
-			/* Side Menu */
 			#side-menu {
 				position: fixed;
 				top: 0;
